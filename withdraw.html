@@ -39,9 +39,15 @@
   .nav-logo span { color: var(--text); }
   .nav-back { color: var(--muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
   .nav-back:hover { color: var(--text); }
+  .nav-link { color: var(--muted); font-size: 14px; font-weight: 600; text-decoration: none; transition: color 0.2s; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--frost-blue); }
+  .nav-links { display: flex; align-items: center; gap: 18px; }
   @media (max-width: 480px) {
     nav { padding: 0 16px; }
     .nav-back { font-size: 12px; }
+    .nav-link { font-size: 12px; }
+    .nav-links { gap: 12px; }
   }
 
   .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 140px 24px 100px; }
@@ -166,6 +172,10 @@
 
 <nav>
   <a class="nav-logo" href="https://partner.frostclient.eu"><img src="favicon.ico" alt="" class="nav-logo-icon"/><span>PARTNER DASHBOARD</span></a>
+  <div class="nav-links">
+    <a class="nav-link" href="https://partner.frostclient.eu">Dashboard</a>
+    <a class="nav-link active" href="https://partner.frostclient.eu/withdraw">Withdraw</a>
+  </div>
   <div class="nav-right">
     <a class="nav-back" href="index.html">← Back to Dashboard</a>
   </div>
@@ -192,7 +202,7 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-tile"><div class="num" id="statEarnings">—</div><div class="label">Earnings</div></div>
+      <div class="stat-tile"><div class="num" id="statEarnings">—</div><div class="label">All-Time Earnings</div></div>
       <div class="stat-tile"><div class="num" id="statBalance">—</div><div class="label">Balance</div></div>
       <div class="stat-tile highlight"><div class="num" id="statAvailable">—</div><div class="label">Available</div></div>
     </div>

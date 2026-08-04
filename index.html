@@ -39,6 +39,10 @@
   .nav-logo span { color: var(--text); }
   .nav-back { color: var(--muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
   .nav-back:hover { color: var(--text); }
+  .nav-link { color: var(--muted); font-size: 14px; font-weight: 600; text-decoration: none; transition: color 0.2s; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--frost-blue); }
+  .nav-links { display: flex; align-items: center; gap: 18px; }
   .nav-right { display: flex; align-items: center; gap: 20px; }
   .nav-logout-btn {
     display: none;
@@ -51,6 +55,8 @@
     nav { padding: 0 16px; }
     .nav-right { gap: 10px; }
     .nav-back { font-size: 12px; }
+    .nav-link { font-size: 12px; }
+    .nav-links { gap: 12px; }
     .nav-logout-btn { font-size: 11px; padding: 6px 10px; }
   }
 
@@ -220,6 +226,10 @@
 
 <nav>
   <a class="nav-logo" href="https://partner.frostclient.eu"><img src="favicon.ico" alt="" class="nav-logo-icon"/><span>PARTNER DASHBOARD</span></a>
+  <div class="nav-links">
+    <a class="nav-link active" href="https://partner.frostclient.eu">Dashboard</a>
+    <a class="nav-link" href="https://partner.frostclient.eu/withdraw">Withdraw</a>
+  </div>
   <div class="nav-right">
     <a class="nav-back" href="https://frostclient.eu">← Back to Frost</a>
     <button type="button" class="nav-logout-btn" id="navLogoutBtn">Log out</button>
@@ -827,7 +837,7 @@
   });
 
   document.getElementById('withdrawOpenBtn').addEventListener('click', () => {
-    window.location.href = 'withdraw.html';
+    window.location.href = 'withdraw';
   });
 
   (function init() {
