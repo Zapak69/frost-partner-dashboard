@@ -148,13 +148,29 @@
   }
   .stat-tile.earnings .num { color: var(--amber); }
   .stat-tile .label { font-size: 12px; color: var(--muted); }
-  .stat-tile.available { display: flex; flex-direction: column; }
-  .stat-tile.available .num { color: var(--amber); }
+  .available-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .available-row strong { color: var(--amber); font-family: 'Space Mono', monospace; font-weight: 700; }
+  .info-icon {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,0.08); color: var(--muted);
+    font-size: 10px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; cursor: help;
+  }
+  .info-icon:hover, .info-icon:focus { color: var(--text); background: rgba(255,255,255,0.16); outline: none; }
+  .info-tooltip {
+    display: none;
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    width: 200px; background: linear-gradient(180deg, #171a1f, #101113);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+    font-size: 11.5px; line-height: 1.5; color: var(--text); text-align: left; font-weight: 400;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 10;
+  }
+  .info-icon:hover .info-tooltip, .info-icon:focus .info-tooltip { display: block; }
   .withdraw-open-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     background: linear-gradient(135deg, var(--amber), var(--amber-deep)); color: #1a0f00;
     border: none; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 700;
-    padding: 8px 16px; border-radius: 8px; margin-top: 10px; align-self: flex-start;
+    padding: 8px 16px; border-radius: 8px; margin-top: 10px;
     transition: transform 0.2s, box-shadow 0.25s;
   }
   .withdraw-open-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,202,40,0.3); }
@@ -369,13 +385,19 @@
     <div class="stats-row">
       <div class="stat-tile"><div class="num" id="statTotalOrders">—</div><div class="label">Total orders</div></div>
       <div class="stat-tile"><div class="num" id="statMonthOrders">—</div><div class="label">This month</div></div>
-      <div class="stat-tile earnings"><div class="num" id="statEarnings">—</div><div class="label">Estimated earnings</div></div>
-      <div class="stat-tile"><div class="num" id="statRate">—</div><div class="label">Commission rate</div></div>
-      <div class="stat-tile available">
-        <div class="num" id="statAvailable">—</div>
-        <div class="label">Available to withdraw</div>
+      <div class="stat-tile earnings">
+        <div class="num" id="statEarnings">—</div>
+        <div class="label">Estimated earnings</div>
+        <div class="available-row">
+          <span>Available: <strong id="statAvailable">—</strong></span>
+          <span class="info-icon" tabindex="0">
+            i
+            <span class="info-tooltip">Money from an order is held for 1 month after that order's date before it can be withdrawn.</span>
+          </span>
+        </div>
         <button type="button" class="withdraw-open-btn" id="withdrawOpenBtn">Withdraw</button>
       </div>
+      <div class="stat-tile"><div class="num" id="statRate">—</div><div class="label">Commission rate</div></div>
     </div>
 
     <div class="chart-section">
