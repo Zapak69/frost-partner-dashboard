@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Partner Dashboard | Frost</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080c10; --surface: #111d2b; --surface2: #162233;
+    --frost-blue: #4fc8f8; --frost-deep: #1a7fc4; --frost-glow: #00c8ff;
+    --amber: #ffca28; --amber-deep: #ffa726;
+    --text: #e8f4fc; --muted: #6b8fa8; --border: rgba(79,200,248,0.15);
+    --red: #ff5c5c;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; min-height: 100vh; }
+  .topo-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .topo-bg svg { width: 100%; height: 100%; opacity: 0.06; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 68px;
+    backdrop-filter: blur(20px); background: rgba(8,12,16,0.9);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700;
+    letter-spacing: -0.5px; color: var(--frost-blue);
+    text-shadow: 0 0 20px rgba(79,200,248,0.5); text-decoration: none;
+  }
+  .nav-logo-icon { width: 22px; height: 22px; filter: drop-shadow(0 0 6px rgba(79,200,248,0.5)); }
+  .nav-logo span { color: var(--text); }
+  .nav-back { color: var(--muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--text); }
+  .nav-right { display: flex; align-items: center; gap: 20px; }
+  .nav-logout-btn {
+    display: none;
+    background: rgba(255,92,92,0.1); border: 1px solid rgba(255,92,92,0.35);
+    color: var(--red); font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600;
+    padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  }
+  .nav-logout-btn:hover { background: rgba(255,92,92,0.2); border-color: rgba(255,92,92,0.6); }
+  @media (max-width: 480px) {
+    nav { padding: 0 16px; }
+    .nav-right { gap: 10px; }
+    .nav-back { font-size: 12px; }
+    .nav-logout-btn { font-size: 11px; padding: 6px 10px; }
+  }
+
+  .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 140px 24px 100px; }
+
+  .gate { max-width: 460px; margin: 60px auto 0; text-align: center; }
+  .gate-eyebrow {
+    font-family: 'Space Mono', monospace; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 3px; color: var(--muted); margin-bottom: 16px;
+  }
+  .gate h1 {
+    font-family: 'Space Mono', monospace; font-size: clamp(26px, 4.5vw, 36px);
+    font-weight: 700; letter-spacing: -1px; margin-bottom: 14px;
+  }
+  .gate p { font-size: 14.5px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+  .gate.denied h1 { color: var(--red); }
+
+  .spinner {
+    width: 30px; height: 30px; margin: 0 auto 20px;
+    border: 3px solid rgba(79,200,248,0.2); border-top-color: var(--frost-blue);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .btn-discord {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    background: #5865F2; color: #fff; text-decoration: none; border: none; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600;
+    padding: 14px 28px; border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.25s;
+  }
+  .btn-discord:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(88,101,242,0.4); }
+  .btn-discord.loading { opacity: 0.6; pointer-events: none; }
+  .btn-discord img { width: 18px; height: 18px; }
+  .btn-secondary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: transparent; color: var(--frost-blue);
+    border: 1px solid var(--border); cursor: pointer; text-decoration: none;
+    font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600;
+    padding: 12px 26px; border-radius: 12px; margin-top: 12px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--frost-blue); background: rgba(79,200,248,0.08); }
+
+  .state { display: none; }
+  .state.active { display: block; animation: fadeInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) { .state.active { animation: none; } }
+
+  .partner-head { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; }
+  .partner-avatar { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--border); }
+  .partner-head h1 { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .partner-head p { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+
+  .code-card {
+    border: 1px solid rgba(255,202,40,0.4); border-radius: 18px;
+    background: linear-gradient(160deg, rgba(255,202,40,0.1), var(--surface) 60%);
+    padding: 26px 28px; margin-bottom: 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  .code-card-label { font-family: 'Space Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--amber); margin-bottom: 8px; }
+  .code-card-value { font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+  .code-copy-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--amber), var(--amber-deep)); color: #1a0f00;
+    border: none; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-size: 13.5px; font-weight: 700;
+    padding: 11px 20px; border-radius: 10px; transition: transform 0.2s, box-shadow 0.25s;
+  }
+  .code-copy-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,202,40,0.35); }
+  .code-copy-btn.copied { background: linear-gradient(135deg, #3dff72, #2ed160); }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 40px; }
+  .stat-tile {
+    background: linear-gradient(180deg, rgba(17,29,43,0.92), rgba(12,20,30,0.92));
+    border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;
+  }
+  .stat-tile .num {
+    font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--frost-blue);
+    margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .stat-tile.earnings .num { color: var(--amber); }
+  .stat-tile .label { font-size: 12px; color: var(--muted); }
+
+  .chart-section { margin-bottom: 24px; }
+  .tracker-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tracker-head h2 { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
+  .chart-card {
+    background: linear-gradient(180deg, rgba(17,29,43,0.92), rgba(12,20,30,0.92));
+    border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+  }
+  .chart-svg { display: block; width: 100%; height: 260px; overflow: visible; }
+  .chart-axis-label { fill: var(--muted); font-size: 11px; font-family: 'Space Mono', monospace; }
+  .chart-count-label { fill: var(--frost-blue); font-size: 11px; font-weight: 700; font-family: 'Space Mono', monospace; text-anchor: middle; }
+
+  .earnings-note { font-size: 12px; color: var(--muted); margin-top: 12px; text-align: center; }
+
+  @media (max-width: 600px) {
+    .partner-head { flex-wrap: wrap; }
+    .code-card { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="topo-bg">
+  <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs><style>.tline{fill:none;stroke:#4fc8f8;stroke-width:1.2;}</style></defs>
+    <path class="tline" d="M-100,200 C100,180 250,240 400,200 S650,140 800,200 S1050,280 1200,220 S1400,160 1500,200"/>
+    <path class="tline" d="M-100,340 C60,320 180,380 360,340 S580,255 740,330 S980,400 1160,345 S1360,290 1500,335"/>
+    <path class="tline" d="M-100,500 C20,480 140,540 320,500 S540,405 700,490 S940,545 1120,490 S1320,440 1500,490"/>
+    <path class="tline" d="M-100,660 C-20,640 100,700 280,660 S500,560 660,645 S900,705 1080,650 S1280,598 1500,648"/>
+  </svg>
+</div>
+
+<nav>
+  <a class="nav-logo" href="https://frostclient.eu"><img src="favicon.ico" alt="" class="nav-logo-icon"/><span>FROST</span></a>
+  <div class="nav-right">
+    <a class="nav-back" href="https://frostclient.eu">← Back to Frost</a>
+    <button type="button" class="nav-logout-btn" id="navLogoutBtn">Log out</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div id="stateLoading" class="state active">
+    <div class="gate"><div class="spinner"></div></div>
+  </div>
+
+  <div id="stateLogin" class="state">
+    <div class="gate">
+      <div class="gate-eyebrow">Partner Dashboard</div>
+      <h1>Sign in to continue</h1>
+      <p>Sign in with the Discord account that holds your Partner role to see your code, orders, and earnings.</p>
+      <button type="button" class="btn-discord" id="loginBtn">
+        <img src="https://frostclient.eu/icons/discord.webp" alt=""/> Sign in with Discord
+      </button>
+    </div>
+  </div>
+
+  <div id="stateWorking" class="state">
+    <div class="gate"><div class="spinner"></div><p>Verifying…</p></div>
+  </div>
+
+  <div id="stateNotMember" class="state">
+    <div class="gate denied">
+      <h1>Join our Discord first</h1>
+      <p>This dashboard checks your role on the Frost Discord server, and you're not a member yet.</p>
+      <a class="btn-discord" href="https://discord.gg/Kn8ydsABU8" target="_blank">Join Discord</a>
+      <br/>
+      <button type="button" class="btn-secondary" id="retryNotMemberBtn">I've joined — try again</button>
+    </div>
+  </div>
+
+  <div id="stateNotPartner" class="state">
+    <div class="gate denied">
+      <h1>No Partner role found</h1>
+      <p>This Discord account doesn't have the Partner role, so there's no dashboard to show. If you think this is a mistake, reach out to us on Discord.</p>
+      <a class="btn-secondary" href="https://frostclient.eu/partner">Apply to become a partner</a>
+    </div>
+  </div>
+
+  <div id="stateNotSetUp" class="state">
+    <div class="gate denied">
+      <h1>Almost there</h1>
+      <p>You've got the Partner role, but your account isn't fully set up on our end yet (no discount code assigned). Ping us on Discord and we'll finish setting it up.</p>
+      <a class="btn-secondary" href="https://discord.gg/Kn8ydsABU8" target="_blank">Message us on Discord</a>
+    </div>
+  </div>
+
+  <div id="stateError" class="state">
+    <div class="gate">
+      <h1>Something went wrong</h1>
+      <p id="errorText">Please try again.</p>
+      <button type="button" class="btn-discord" id="retryBtn" style="background:rgba(255,255,255,0.06);">Retry</button>
+    </div>
+  </div>
+
+  <div id="stateData" class="state">
+    <div class="partner-head">
+      <img class="partner-avatar" id="partnerAvatar" src="" alt=""/>
+      <div>
+        <h1 id="partnerName">—</h1>
+        <p id="partnerRate">—</p>
+      </div>
+    </div>
+
+    <div class="code-card">
+      <div>
+        <div class="code-card-label">Your discount code</div>
+        <div class="code-card-value" id="partnerCode">—</div>
+      </div>
+      <button type="button" class="code-copy-btn" id="copyCodeBtn">Copy code</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-tile"><div class="num" id="statTotalOrders">—</div><div class="label">Total orders</div></div>
+      <div class="stat-tile"><div class="num" id="statMonthOrders">—</div><div class="label">This month</div></div>
+      <div class="stat-tile earnings"><div class="num" id="statEarnings">—</div><div class="label">Estimated earnings</div></div>
+      <div class="stat-tile"><div class="num" id="statRate">—</div><div class="label">Commission rate</div></div>
+    </div>
+
+    <div class="chart-section">
+      <div class="tracker-head">
+        <h2>Orders per month</h2>
+      </div>
+      <div class="chart-card">
+        <svg id="monthlyChart" class="chart-svg" viewBox="0 0 1000 260"></svg>
+      </div>
+      <p class="earnings-note">Earnings are an estimate based on logged orders — final payout is confirmed manually.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  const LITE_API_URL = 'https://script.google.com/macros/s/AKfycbxF57u1UNBsonktp5_2EseJtFkBZR0-CCxyazOGVUmEBrcwjU1-t6Us41gcrRqCsGcR/exec';
+  const TOKEN_KEY = 'frostPartnerDashToken';
+  const OAUTH_STATE_KEY = 'frostPartnerDashOauthState';
+  const CACHE_KEY = 'frostPartnerDashCache';
+  const DISCORD_CLIENT_ID = '1512834635640475898';
+  const DISCORD_REDIRECT_URI = 'https://partner.frostclient.eu';
+
+  const states = ['stateLoading', 'stateLogin', 'stateWorking', 'stateNotMember', 'stateNotPartner', 'stateNotSetUp', 'stateError', 'stateData'];
+  function show(id) {
+    states.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
+    document.getElementById('navLogoutBtn').style.display = id === 'stateData' ? 'inline-block' : 'none';
+  }
+
+  function loadToken() {
+    try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+  }
+  function saveToken(t) {
+    try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {}
+  }
+  function clearToken() {
+    try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(CACHE_KEY); } catch (e) {}
+  }
+  function saveCache(data) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+  function loadCache() {
+    try { const raw = localStorage.getItem(CACHE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+
+  function showError(msg) {
+    document.getElementById('errorText').textContent = msg || 'Please try again.';
+    show('stateError');
+  }
+
+  function avatarUrl(user) {
+    if (user && user.avatar) return 'https://cdn.discordapp.com/avatars/' + user.id + '/' + user.avatar + '.png?size=96';
+    return 'https://cdn.discordapp.com/embed/avatars/0.png';
+  }
+
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function formatMonthLabel(key) {
+    const parts = key.split('-');
+    const idx = parseInt(parts[1], 10) - 1;
+    return (MONTH_NAMES[idx] || key) + " '" + parts[0].slice(2);
+  }
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs) {
+    const e = document.createElementNS(SVG_NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function renderMonthlyChart(items) {
+    const svg = document.getElementById('monthlyChart');
+    svg.innerHTML = '';
+    if (!items || !items.length) return;
+    const W = 1000, H = 260;
+    const PAD_L = 10, PAD_R = 10, PAD_T = 26, PAD_B = 34;
+    const chartW = W - PAD_L - PAD_R;
+    const chartH = H - PAD_T - PAD_B;
+    const maxCount = Math.max.apply(null, items.map(i => i.count).concat([1]));
+    const slot = chartW / items.length;
+    const barW = Math.max(6, slot * 0.55);
+
+    items.forEach((item, i) => {
+      const cx = PAD_L + i * slot + slot / 2;
+      const barH = (item.count / maxCount) * chartH;
+      const y = PAD_T + (chartH - barH);
+      svg.appendChild(svgEl('rect', {
+        x: cx - barW / 2, y: y, width: barW, height: Math.max(barH, item.count > 0 ? 2 : 0),
+        rx: 3, fill: item.count > 0 ? 'var(--frost-blue)' : 'rgba(255,255,255,0.06)'
+      }));
+      if (item.count > 0) {
+        const countLabel = svgEl('text', { x: cx, y: y - 8, class: 'chart-count-label' });
+        countLabel.textContent = item.count;
+        svg.appendChild(countLabel);
+      }
+      const monthLabel = svgEl('text', { x: cx, y: H - 12, 'text-anchor': 'middle', class: 'chart-axis-label' });
+      monthLabel.textContent = formatMonthLabel(item.month);
+      svg.appendChild(monthLabel);
+    });
+  }
+
+  function renderDashboard(data) {
+    document.getElementById('partnerAvatar').src = avatarUrl(data.user);
+    document.getElementById('partnerName').textContent = (data.user && (data.user.name || data.user.username)) || 'Partner';
+    document.getElementById('partnerRate').textContent = data.percentage + '% commission on referred orders';
+    document.getElementById('partnerCode').textContent = data.code || '—';
+    document.getElementById('statTotalOrders').textContent = data.totalOrders != null ? data.totalOrders : '—';
+    document.getElementById('statMonthOrders').textContent = data.currentMonthOrders != null ? data.currentMonthOrders : '—';
+    document.getElementById('statRate').textContent = data.percentage + '%';
+    const earnings = (data.earnings || []);
+    document.getElementById('statEarnings').textContent = earnings.length
+      ? earnings.map(e => e.amount.toFixed(2) + ' ' + e.currency.toUpperCase()).join(' + ')
+      : '0';
+    renderMonthlyChart(data.monthlyBreakdown || []);
+  }
+
+  function handleResponse(data) {
+    if (!data || !data.ok) {
+      if (data && data.error === 'token_expired') { clearToken(); show('stateLogin'); return; }
+      showError((data && data.detail) || "Couldn't verify your account. Please try again.");
+      return;
+    }
+    if (data.status === 'not_member') { clearToken(); show('stateNotMember'); return; }
+    if (data.status === 'not_partner') { clearToken(); show('stateNotPartner'); return; }
+    if (data.status === 'not_set_up') {
+      if (data.partnerDashToken) saveToken(data.partnerDashToken);
+      show('stateNotSetUp');
+      return;
+    }
+    if (data.status === 'eligible') {
+      if (data.partnerDashToken) saveToken(data.partnerDashToken);
+      saveCache(data);
+      renderDashboard(data);
+      show('stateData');
+      return;
+    }
+    showError('Unexpected response. Please try again.');
+  }
+
+  function exchangeCode(code) {
+    show('stateWorking');
+    fetch(LITE_API_URL + '?action=partnerDashAuth&code=' + encodeURIComponent(code), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(handleResponse)
+      .catch(() => showError('Network error while contacting the server. Please try again.'));
+  }
+
+  function recheckToken(token, isBackground) {
+    fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => { if (!isBackground || (data && data.ok)) handleResponse(data); })
+      .catch(() => { if (!isBackground) showError('Network error while contacting the server. Please try again.'); });
+  }
+
+  const loginBtn = document.getElementById('loginBtn');
+  function startLogin() {
+    let csrfState = '';
+    try {
+      const buf = new Uint8Array(16);
+      crypto.getRandomValues(buf);
+      csrfState = Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join('');
+      sessionStorage.setItem(OAUTH_STATE_KEY, csrfState);
+    } catch (e) {}
+    const url = 'https://discord.com/oauth2/authorize'
+      + '?client_id=' + encodeURIComponent(DISCORD_CLIENT_ID)
+      + '&response_type=code'
+      + '&redirect_uri=' + encodeURIComponent(DISCORD_REDIRECT_URI)
+      + '&scope=' + encodeURIComponent('identify guilds.members.read')
+      + '&state=' + csrfState;
+    window.location.href = url;
+  }
+  loginBtn.addEventListener('click', startLogin);
+  document.getElementById('retryNotMemberBtn').addEventListener('click', startLogin);
+  document.getElementById('retryBtn').addEventListener('click', () => show('stateLogin'));
+
+  document.getElementById('navLogoutBtn').addEventListener('click', () => {
+    clearToken();
+    show('stateLogin');
+  });
+
+  document.getElementById('copyCodeBtn').addEventListener('click', function () {
+    const code = document.getElementById('partnerCode').textContent;
+    if (!code || code === '—') return;
+    const btn = this;
+    const done = () => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done).catch(() => {});
+    }
+  });
+
+  (function init() {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.has('code')) {
+      const code = params.get('code');
+      const returnedState = params.get('state') || '';
+      let storedState = '';
+      try { storedState = sessionStorage.getItem(OAUTH_STATE_KEY) || ''; } catch (e) {}
+      try { sessionStorage.removeItem(OAUTH_STATE_KEY); } catch (e) {}
+
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('code');
+      cleanUrl.searchParams.delete('state');
+      window.history.replaceState(null, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+
+      if (storedState && returnedState !== storedState) {
+        showError('Sign-in session mismatch. Please try again.');
+        return;
+      }
+      exchangeCode(code);
+      return;
+    }
+
+    if (params.has('error')) {
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('error');
+      cleanUrl.searchParams.delete('error_description');
+      cleanUrl.searchParams.delete('state');
+      window.history.replaceState(null, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+      show('stateLogin');
+      return;
+    }
+
+    const token = loadToken();
+    if (!token) { show('stateLogin'); return; }
+
+    const cached = loadCache();
+    if (cached) {
+      renderDashboard(cached);
+      show('stateData');
+      recheckToken(token, true);
+    } else {
+      show('stateWorking');
+      recheckToken(token, false);
+    }
+  })();
+})();
+</script>
+</body>
+</html>
