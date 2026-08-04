@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Partner Dashboard | Frost</title>
-<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/x-icon" href="favicon.ico" id="favicon">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
@@ -20,7 +20,8 @@
   html { scroll-behavior: smooth; }
   body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; min-height: 100vh; }
   .topo-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-  .topo-bg svg { width: 100%; height: 100%; opacity: 0.06; }
+  .topo-bg svg { width: 100%; height: 100%; opacity: 0.07; }
+  #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -34,15 +35,18 @@
     font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700;
     letter-spacing: -0.5px; color: var(--frost-blue);
     text-shadow: 0 0 20px rgba(79,200,248,0.5); text-decoration: none;
+    transition: opacity 0.2s;
   }
-  .nav-logo-icon { width: 22px; height: 22px; filter: drop-shadow(0 0 6px rgba(79,200,248,0.5)); }
+  .nav-logo:hover { opacity: 0.85; }
+  .nav-logo-icon { width: 22px; height: 22px; filter: drop-shadow(0 0 6px rgba(79,200,248,0.5)); transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); }
+  .nav-logo:hover .nav-logo-icon { transform: rotate(-8deg) scale(1.08); }
   .nav-logo span { color: var(--text); }
   .nav-back { color: var(--muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
   .nav-back:hover { color: var(--text); }
   .nav-link { color: var(--muted); font-size: 14px; font-weight: 600; text-decoration: none; transition: color 0.2s; }
   .nav-link:hover { color: var(--text); }
   .nav-link.active { color: var(--frost-blue); }
-  .nav-links { display: flex; align-items: center; gap: 18px; }
+  .nav-links { display: none; align-items: center; gap: 18px; }
   .nav-right { display: flex; align-items: center; gap: 20px; }
   .nav-logout-btn {
     display: none;
@@ -78,6 +82,44 @@
   }
   .gate p.state-hint.show { display: block; animation: fadeInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
   .gate.denied h1 { color: var(--red); }
+
+  .login-hero { max-width: 680px; margin: 20px auto 0; text-align: center; }
+  .login-badge {
+    width: 64px; height: 64px; margin: 0 auto 26px; border-radius: 18px;
+    background: linear-gradient(160deg, rgba(79,200,248,0.18), rgba(79,200,248,0.03));
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 40px rgba(79,200,248,0.15);
+    animation: floatBadge 4s ease-in-out infinite;
+  }
+  .login-badge img { width: 30px; height: 30px; filter: drop-shadow(0 0 10px rgba(79,200,248,0.5)); }
+  @keyframes floatBadge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @media (prefers-reduced-motion: reduce) { .login-badge { animation: none; } }
+  .login-hero h1 {
+    font-family: 'Space Mono', monospace; font-size: clamp(30px, 5vw, 44px);
+    font-weight: 700; letter-spacing: -1.5px; margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--text), var(--frost-blue));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .login-hero > p {
+    font-size: 15px; color: var(--muted); line-height: 1.75; margin-bottom: 32px;
+    max-width: 480px; margin-left: auto; margin-right: auto;
+  }
+  .login-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 48px; text-align: left; }
+  .login-feature {
+    background: linear-gradient(180deg, rgba(17,29,43,0.7), rgba(12,20,30,0.7));
+    border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+    transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), border-color 0.25s, background 0.25s, box-shadow 0.25s;
+  }
+  .login-feature:hover {
+    transform: translateY(-4px); border-color: rgba(79,200,248,0.35);
+    background: linear-gradient(180deg, rgba(17,29,43,0.9), rgba(12,20,30,0.9));
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  }
+  .login-feature-icon { font-size: 22px; margin-bottom: 10px; }
+  .login-feature-title { font-family: 'Space Mono', monospace; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; }
+  .login-feature-desc { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+  @media (max-width: 640px) { .login-features { grid-template-columns: 1fr; } }
 
   .spinner {
     width: 30px; height: 30px; margin: 0 auto 20px;
@@ -132,7 +174,9 @@
     background: linear-gradient(160deg, rgba(255,202,40,0.1), var(--surface) 60%);
     padding: 26px 28px; margin-bottom: 28px;
     display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s;
   }
+  .code-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(0,0,0,0.28); }
   .code-card-label { font-family: 'Space Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--amber); margin-bottom: 8px; }
   .code-card-value { font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700; letter-spacing: 1px; }
   .code-copy-btn {
@@ -148,7 +192,9 @@
   .stat-tile {
     background: linear-gradient(180deg, rgba(17,29,43,0.92), rgba(12,20,30,0.92));
     border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;
+    transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), border-color 0.25s, box-shadow 0.25s;
   }
+  .stat-tile:hover { transform: translateY(-3px); border-color: rgba(79,200,248,0.3); box-shadow: 0 10px 26px rgba(0,0,0,0.25); }
   .stat-tile .num {
     font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--frost-blue);
     margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -206,7 +252,13 @@
   .earnings-note { font-size: 12px; color: var(--muted); margin-top: 12px; text-align: center; }
 
   .history-list { display: flex; flex-direction: column; }
-  .history-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--border); }
+  .history-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 4px; margin: 0 -10px; padding-left: 10px; padding-right: 10px;
+    border-bottom: 1px solid var(--border); border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .history-row:hover { background: rgba(79,200,248,0.05); }
   .history-row:last-child { border-bottom: none; }
   .history-row-date { font-size: 11.5px; color: var(--muted); font-family: 'Space Mono', monospace; }
   .history-row-desc { font-size: 13.5px; color: var(--text); margin-top: 2px; }
@@ -223,15 +275,23 @@
   <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <defs><style>.tline{fill:none;stroke:#4fc8f8;stroke-width:1.2;}</style></defs>
     <path class="tline" d="M-100,200 C100,180 250,240 400,200 S650,140 800,200 S1050,280 1200,220 S1400,160 1500,200"/>
+    <path class="tline" d="M-100,270 C80,250 200,310 380,270 S600,190 760,265 S1000,340 1180,285 S1380,225 1500,265"/>
     <path class="tline" d="M-100,340 C60,320 180,380 360,340 S580,255 740,330 S980,400 1160,345 S1360,290 1500,335"/>
+    <path class="tline" d="M-100,420 C40,400 160,460 340,420 S560,330 720,410 S960,470 1140,415 S1340,365 1500,415"/>
     <path class="tline" d="M-100,500 C20,480 140,540 320,500 S540,405 700,490 S940,545 1120,490 S1320,440 1500,490"/>
+    <path class="tline" d="M-100,580 C0,558 120,618 300,580 S520,480 680,565 S920,625 1100,570 S1300,518 1500,568"/>
     <path class="tline" d="M-100,660 C-20,640 100,700 280,660 S500,560 660,645 S900,705 1080,650 S1280,598 1500,648"/>
+    <path class="tline" d="M-100,740 C-40,720 80,780 260,740 S480,640 640,725 S880,785 1060,730 S1260,678 1500,728"/>
+    <path class="tline" d="M200,100 C300,80 380,150 450,100 S600,40 700,110 S820,180 940,120 S1100,60 1200,100"/>
+    <path class="tline" d="M150,160 C260,140 340,210 420,160 S570,95 670,165 S800,235 920,175 S1060,115 1160,160"/>
+    <path class="tline" d="M250,820 C350,800 430,870 500,820 S650,755 750,825 S870,895 990,835 S1150,775 1250,820"/>
   </svg>
 </div>
+<canvas id="particles"></canvas>
 
 <nav>
-  <a class="nav-logo" href="https://partner.frostclient.eu"><img src="favicon.ico" alt="" class="nav-logo-icon"/><span>PARTNER DASHBOARD</span></a>
-  <div class="nav-links">
+  <a class="nav-logo" href="https://partner.frostclient.eu"><img src="favicon.ico" alt="" class="nav-logo-icon" id="navLogoIcon"/><span id="navLogoText">Frost</span></a>
+  <div class="nav-links" id="navLinks">
     <a class="nav-link active" href="https://partner.frostclient.eu">Dashboard</a>
     <a class="nav-link" href="https://partner.frostclient.eu/withdraw">Withdraw</a>
   </div>
@@ -249,13 +309,32 @@
   </div>
 
   <div id="stateLogin" class="state">
-    <div class="gate">
-      <div class="gate-eyebrow">Partner Dashboard</div>
-      <h1>Sign in to continue</h1>
-      <p>Sign in with the Discord account that holds your Partner role to see your code, orders, and earnings.</p>
+    <div class="login-hero">
+      <div class="login-badge"><img src="favicon.ico" alt=""/></div>
+      <div class="gate-eyebrow">Frost Partner Program</div>
+      <h1>Your Partner Dashboard</h1>
+      <p>Track referred orders, watch your earnings grow, and request withdrawals — all in one place. Sign in with the Discord account that holds your Partner role to get started.</p>
       <button type="button" class="btn-discord" id="loginBtn">
         <img src="https://frostclient.eu/icons/discord.webp" alt=""/> Sign in with Discord
       </button>
+
+      <div class="login-features">
+        <div class="login-feature">
+          <div class="login-feature-icon">📈</div>
+          <div class="login-feature-title">Track orders</div>
+          <div class="login-feature-desc">See every order placed with your discount code, updated live.</div>
+        </div>
+        <div class="login-feature">
+          <div class="login-feature-icon">💰</div>
+          <div class="login-feature-title">Watch earnings</div>
+          <div class="login-feature-desc">Follow your commission as it builds up, month by month.</div>
+        </div>
+        <div class="login-feature">
+          <div class="login-feature-icon">⚡</div>
+          <div class="login-feature-title">Withdraw anytime</div>
+          <div class="login-feature-desc">Request a payout in a couple of clicks once it's available.</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -382,6 +461,40 @@
 </div>
 
 <script>
+const particleCanvas = document.getElementById('particles');
+const particleCtx = particleCanvas.getContext('2d');
+let particleW, particleH, particles = [];
+function resizeParticleCanvas() {
+  particleW = particleCanvas.width = window.innerWidth;
+  particleH = particleCanvas.height = window.innerHeight;
+}
+resizeParticleCanvas();
+window.addEventListener('resize', resizeParticleCanvas);
+for (let i = 0; i < 100; i++) particles.push({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  r: Math.random() * 1.5 + 0.5,
+  speed: Math.random() * 0.4 + 0.1,
+  drift: (Math.random() - 0.5) * 0.3,
+  opacity: Math.random() * 0.4 + 0.1
+});
+(function animateParticles() {
+  particleCtx.clearRect(0, 0, particleW, particleH);
+  for (const p of particles) {
+    particleCtx.beginPath();
+    particleCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    particleCtx.fillStyle = `rgba(168,230,248,${p.opacity})`;
+    particleCtx.fill();
+    p.y += p.speed; p.x += p.drift;
+    if (p.y > particleH + 10) { p.y = -10; p.x = Math.random() * particleW; }
+    if (p.x > particleW + 10) p.x = -10;
+    if (p.x < -10) p.x = particleW + 10;
+  }
+  requestAnimationFrame(animateParticles);
+})();
+</script>
+
+<script>
 (function () {
   const LITE_API_URL = 'https://script.google.com/macros/s/AKfycbxF57u1UNBsonktp5_2EseJtFkBZR0-CCxyazOGVUmEBrcwjU1-t6Us41gcrRqCsGcR/exec';
   const TOKEN_KEY = 'frostPartnerDashToken';
@@ -394,8 +507,14 @@
   let workingHintTimer = null;
   function show(id) {
     states.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
-    document.getElementById('navLogoutBtn').style.display = id === 'stateData' ? 'inline-block' : 'none';
-    document.getElementById('withdrawOpenBtn').style.display = id === 'stateData' ? 'inline-flex' : 'none';
+    const loggedIn = id === 'stateData' || id === 'stateNotSetUp';
+    const isPartner = id === 'stateData';
+    document.getElementById('navLogoutBtn').style.display = loggedIn ? 'inline-block' : 'none';
+    document.getElementById('withdrawOpenBtn').style.display = isPartner ? 'inline-flex' : 'none';
+    document.getElementById('navLinks').style.display = isPartner ? 'flex' : 'none';
+    document.getElementById('navLogoText').textContent = isPartner ? 'PARTNER DASHBOARD' : 'Frost';
+    document.getElementById('navLogoIcon').src = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
+    document.getElementById('favicon').href = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
 
     clearTimeout(workingHintTimer);
     const hint = document.getElementById('workingHint');
