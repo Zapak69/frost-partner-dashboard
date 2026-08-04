@@ -405,13 +405,6 @@
 
   const loginBtn = document.getElementById('loginBtn');
   function startLogin() {
-    // Apps Script cold starts are slow enough (measured up to 30s+ on this exact endpoint) that
-    // Discord's short-lived authorization code can expire before handlePartnerDashAuth_ even
-    // gets to the token-exchange call, surfacing as a confusing "invalid_grant: Invalid code"
-    // error that looks like a redirect_uri misconfiguration but isn't. Firing a cheap, ignored
-    // warm-up request here - in parallel with the redirect, never awaited - gives Apps Script a
-    // head start while the user is busy on Discord's own consent screen (which reliably takes
-    // several real seconds), so the actual exchange after they land back here is fast.
     try { fetch(LITE_API_URL + '?action=partnerDashConfig', { cache: 'no-store', keepalive: true }); } catch (e) {}
     let csrfState = '';
     try {
