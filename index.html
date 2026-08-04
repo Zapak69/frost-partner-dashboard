@@ -142,6 +142,7 @@
   .tracker-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
   .tracker-head h2 { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
   .chart-card {
+    position: relative;
     background: linear-gradient(180deg, rgba(17,29,43,0.92), rgba(12,20,30,0.92));
     border: 1px solid var(--border); border-radius: 16px; padding: 20px;
   }
@@ -149,6 +150,27 @@
   .chart-axis-label { fill: var(--muted); font-size: 11px; font-family: 'Space Mono', monospace; }
   .chart-version-label { fill: var(--text); font-size: 12px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; }
   .chart-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13.5px; }
+
+  .range-switch { display: flex; gap: 4px; background: rgba(8,12,16,0.6); border: 1px solid var(--border); border-radius: 10px; padding: 4px; flex-wrap: wrap; }
+  .range-btn {
+    background: none; border: none; cursor: pointer; border-radius: 7px;
+    padding: 6px 12px; font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 600;
+    color: var(--muted); transition: color 0.2s, background 0.2s;
+  }
+  .range-btn:hover { color: var(--text); }
+  .range-btn.active { background: var(--frost-blue); color: #06121c; }
+  .chart-subline { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+  .chart-subline strong { color: var(--text); font-family: 'Space Mono', monospace; }
+  .chart-svg { display: block; width: 100%; height: 220px; overflow: visible; }
+  .chart-curve { transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+  @media (prefers-reduced-motion: reduce) { .chart-curve { transition: none; } }
+  .chart-tooltip {
+    position: absolute; display: none; pointer-events: none; transform: translate(-50%, calc(-100% - 12px));
+    background: linear-gradient(180deg, #171a1f, #101113); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 12px; font-size: 12.5px; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 5;
+  }
+  .chart-tooltip-value { color: var(--frost-blue); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13.5px; }
+  .chart-tooltip-label { color: var(--muted); margin-top: 2px; }
 
   .earnings-note { font-size: 12px; color: var(--muted); margin-top: 12px; text-align: center; }
 
@@ -262,6 +284,27 @@
 
     <div class="chart-section">
       <div class="tracker-head">
+        <h2>Orders over time</h2>
+        <div class="range-switch" id="rangeSwitch">
+          <button type="button" class="range-btn" data-range="1h">1h</button>
+          <button type="button" class="range-btn" data-range="12h">12h</button>
+          <button type="button" class="range-btn active" data-range="24h">24h</button>
+          <button type="button" class="range-btn" data-range="week">1W</button>
+          <button type="button" class="range-btn" data-range="month">1M</button>
+          <button type="button" class="range-btn" data-range="year">1Y</button>
+          <button type="button" class="range-btn" data-range="all">AllTime</button>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-subline" id="timeChartSubline"></div>
+        <svg id="timeChart" class="chart-svg" viewBox="0 0 1000 220"></svg>
+        <div class="chart-tooltip" id="timeChartTooltip"></div>
+        <div class="chart-empty" id="timeChartEmpty" style="display:none;">No orders yet.</div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="tracker-head">
         <h2>Orders per month</h2>
       </div>
       <div class="chart-card">
@@ -344,6 +387,180 @@
     return parts.join('.');
   }
   const CHART_ACCENT = '#4fc8f8';
+  const CHART_MUTED = '#6b8fa8';
+  const CHART_BORDER = 'rgba(79,200,248,0.15)';
+
+  function niceCeil(value) {
+    if (value <= 0) return 1;
+    const exp = Math.floor(Math.log10(value));
+    const base = Math.pow(10, exp);
+    const steps = [1, 2, 5, 10];
+    for (const s of steps) {
+      if (value <= s * base) return s * base;
+    }
+    return 10 * base;
+  }
+  function formatClock(t) {
+    return new Date(t).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+  function formatDateShort(t) {
+    return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+  let lastData = null;
+  let currentRange = '24h';
+  function seriesForRange(range) {
+    const timestamps = (lastData && lastData.orderTimestamps) || [];
+    const now = Date.now();
+    const HOUR = 60 * 60 * 1000, DAY = 24 * HOUR;
+    let bucketMs, startTime, tooltipFn;
+
+    if (range === '1h') { bucketMs = 5 * 60 * 1000; startTime = now - HOUR; tooltipFn = formatClock; }
+    else if (range === '12h') { bucketMs = 30 * 60 * 1000; startTime = now - 12 * HOUR; tooltipFn = formatClock; }
+    else if (range === '24h') { bucketMs = HOUR; startTime = now - 24 * HOUR; tooltipFn = formatClock; }
+    else if (range === 'week') { bucketMs = DAY; startTime = now - 7 * DAY; tooltipFn = formatDateShort; }
+    else if (range === 'month') { bucketMs = DAY; startTime = now - 30 * DAY; tooltipFn = formatDateShort; }
+    else if (range === 'year') { bucketMs = 30 * DAY; startTime = now - 365 * DAY; tooltipFn = formatDateShort; }
+    else {
+      const earliest = timestamps.length ? timestamps[0] : now - DAY;
+      bucketMs = Math.max(DAY, (now - earliest) / 24);
+      startTime = earliest;
+      tooltipFn = formatDateShort;
+    }
+
+    const bucketCount = Math.max(1, Math.ceil((now - startTime) / bucketMs));
+    const buckets = new Array(bucketCount).fill(0);
+    timestamps.forEach(t => {
+      if (t < startTime) return;
+      const idx = Math.min(bucketCount - 1, Math.floor((t - startTime) / bucketMs));
+      buckets[idx]++;
+    });
+    return buckets.map((count, i) => {
+      const t = startTime + i * bucketMs + bucketMs / 2;
+      return { t, value: count, tooltip: tooltipFn(t) };
+    });
+  }
+
+  function renderTimeChart() {
+    const svg = document.getElementById('timeChart');
+    const emptyEl = document.getElementById('timeChartEmpty');
+    const tooltip = document.getElementById('timeChartTooltip');
+    const sublineEl = document.getElementById('timeChartSubline');
+    svg.innerHTML = '';
+    tooltip.style.display = 'none';
+
+    if (!lastData || !lastData.totalOrders) {
+      emptyEl.style.display = '';
+      sublineEl.textContent = '';
+      return;
+    }
+    const points = seriesForRange(currentRange);
+    emptyEl.style.display = 'none';
+
+    const rect0 = svg.getBoundingClientRect();
+    const W = Math.max(1, Math.round(rect0.width)), H = Math.max(1, Math.round(rect0.height));
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    const PAD_L = 30, PAD_R = 12, PAD_T = 16, PAD_B = 30;
+    const plotW = W - PAD_L - PAD_R, plotH = H - PAD_T - PAD_B;
+    const xs = points.map(p => p.t);
+    const xMin = Math.min.apply(null, xs), xMax = Math.max.apply(null, xs);
+    const yMax = niceCeil(Math.max.apply(null, points.map(p => p.value)) || 1);
+
+    function xPix(t) { return PAD_L + (xMax === xMin ? plotW / 2 : (t - xMin) / (xMax - xMin) * plotW); }
+    function yPix(v) { return PAD_T + plotH - (v / yMax) * plotH; }
+
+    const GRID_STEPS = 4;
+    for (let i = 0; i <= GRID_STEPS; i++) {
+      const v = yMax * i / GRID_STEPS;
+      const y = yPix(v);
+      svg.appendChild(svgEl('line', { x1: PAD_L, x2: W - PAD_R, y1: y, y2: y, stroke: CHART_BORDER, 'stroke-width': 1 }));
+      const label = svgEl('text', { x: PAD_L - 8, y: y + 4, 'text-anchor': 'end', class: 'chart-axis-label' });
+      label.textContent = formatNumber(Math.round(v));
+      svg.appendChild(label);
+    }
+
+    const linePath = points.map((p, i) => (i === 0 ? 'M' : 'L') + xPix(p.t).toFixed(1) + ',' + yPix(p.value).toFixed(1)).join(' ');
+    const baseline = yPix(0);
+    const areaPath = linePath +
+      ' L' + xPix(points[points.length - 1].t).toFixed(1) + ',' + baseline +
+      ' L' + xPix(points[0].t).toFixed(1) + ',' + baseline + ' Z';
+    const clipRect = svgEl('rect', { x: PAD_L, y: 0, width: plotW, height: H });
+    const clipPath = svgEl('clipPath', { id: 'partner-curve-clip' });
+    clipPath.appendChild(clipRect);
+    const defs = svgEl('defs', {});
+    defs.appendChild(clipPath);
+    svg.appendChild(defs);
+    const curveWindow = svgEl('g', { 'clip-path': 'url(#partner-curve-clip)' });
+    const curveGroup = svgEl('g', { class: 'chart-curve' });
+    curveGroup.appendChild(svgEl('path', { d: areaPath, fill: CHART_ACCENT, opacity: '0.1', stroke: 'none' }));
+    curveGroup.appendChild(svgEl('path', { d: linePath, fill: 'none', stroke: CHART_ACCENT, 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+
+    const first = points[0], last = points[points.length - 1];
+    const firstLabel = svgEl('text', { x: xPix(first.t), y: H - 8, 'text-anchor': 'start', class: 'chart-axis-label' });
+    firstLabel.textContent = first.tooltip;
+    svg.appendChild(firstLabel);
+    const lastLabel = svgEl('text', { x: xPix(last.t), y: H - 8, 'text-anchor': 'end', class: 'chart-axis-label' });
+    lastLabel.textContent = last.tooltip;
+    svg.appendChild(lastLabel);
+
+    curveWindow.appendChild(curveGroup);
+    svg.appendChild(curveWindow);
+
+    const crosshair = svgEl('line', { x1: 0, x2: 0, y1: PAD_T, y2: H - PAD_B, stroke: CHART_MUTED, 'stroke-width': 1, opacity: 0 });
+    svg.appendChild(crosshair);
+    const hoverDot = svgEl('circle', { r: 5, fill: CHART_ACCENT, stroke: '#0d141c', 'stroke-width': 2, opacity: 0 });
+    svg.appendChild(hoverDot);
+    const hitRect = svgEl('rect', { x: PAD_L, y: 0, width: plotW, height: H, fill: 'transparent' });
+    svg.appendChild(hitRect);
+
+    const totalInRange = points.reduce((sum, p) => sum + p.value, 0);
+    const peak = Math.max.apply(null, points.map(p => p.value));
+    sublineEl.innerHTML = 'Total in range: <strong>' + formatNumber(totalInRange) + '</strong> &nbsp;·&nbsp; Peak: <strong>' + formatNumber(peak) + '</strong>';
+
+    function handleMove(evt) {
+      const rect = svg.getBoundingClientRect();
+      const mouseX = (evt.clientX - rect.left) * (W / rect.width);
+      let nearest = points[0], nearestDist = Infinity;
+      for (const p of points) {
+        const dist = Math.abs(xPix(p.t) - mouseX);
+        if (dist < nearestDist) { nearest = p; nearestDist = dist; }
+      }
+      const px = xPix(nearest.t), py = yPix(nearest.value);
+      crosshair.setAttribute('x1', px); crosshair.setAttribute('x2', px); crosshair.setAttribute('opacity', 1);
+      hoverDot.setAttribute('cx', px); hoverDot.setAttribute('cy', py); hoverDot.setAttribute('opacity', 1);
+
+      const containerRect = svg.parentElement.getBoundingClientRect();
+      const left = (px / W) * rect.width + (rect.left - containerRect.left);
+      const top = (py / H) * rect.height + (rect.top - containerRect.top);
+      tooltip.style.display = 'block';
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = top + 'px';
+      tooltip.textContent = '';
+      const valueEl = document.createElement('div');
+      valueEl.className = 'chart-tooltip-value';
+      valueEl.textContent = formatNumber(nearest.value) + ' order' + (nearest.value === 1 ? '' : 's');
+      const labelEl = document.createElement('div');
+      labelEl.className = 'chart-tooltip-label';
+      labelEl.textContent = nearest.tooltip;
+      tooltip.appendChild(valueEl);
+      tooltip.appendChild(labelEl);
+    }
+    function handleLeave() {
+      crosshair.setAttribute('opacity', 0);
+      hoverDot.setAttribute('opacity', 0);
+      tooltip.style.display = 'none';
+    }
+    hitRect.addEventListener('mousemove', handleMove);
+    hitRect.addEventListener('mouseleave', handleLeave);
+  }
+
+  document.getElementById('rangeSwitch').addEventListener('click', function (e) {
+    const btn = e.target.closest('.range-btn');
+    if (!btn || btn.classList.contains('active')) return;
+    document.querySelectorAll('#rangeSwitch .range-btn').forEach(b => b.classList.toggle('active', b === btn));
+    currentRange = btn.dataset.range;
+    renderTimeChart();
+  });
+
   function renderBarChart(svgId, emptyId, items) {
     const svg = document.getElementById(svgId);
     const emptyEl = document.getElementById(emptyId);
@@ -383,6 +600,7 @@
   }
 
   function renderDashboard(data) {
+    lastData = data;
     document.getElementById('partnerAvatar').src = avatarUrl(data.user);
     document.getElementById('partnerName').textContent = (data.user && (data.user.name || data.user.username)) || 'Partner';
     document.getElementById('partnerRate').textContent = data.percentage + '% commission on referred orders';
@@ -396,6 +614,7 @@
       : '0';
     const monthlyItems = (data.monthlyBreakdown || []).map(m => ({ label: formatMonthLabel(m.month), count: m.count }));
     renderBarChart('monthlyChart', 'monthlyChartEmpty', monthlyItems);
+    renderTimeChart();
   }
 
   function handleResponse(data) {
