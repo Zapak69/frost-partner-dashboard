@@ -148,24 +148,6 @@
   }
   .stat-tile.earnings .num { color: var(--amber); }
   .stat-tile .label { font-size: 12px; color: var(--muted); }
-  .available-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 10px; }
-  .available-row strong { color: var(--amber); font-family: 'Space Mono', monospace; font-weight: 700; }
-  .info-icon {
-    position: relative; display: inline-flex; align-items: center; justify-content: center;
-    width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0;
-    background: rgba(255,255,255,0.08); color: var(--muted);
-    font-size: 10px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; cursor: help;
-  }
-  .info-icon:hover, .info-icon:focus { color: var(--text); background: rgba(255,255,255,0.16); outline: none; }
-  .info-tooltip {
-    display: none;
-    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
-    width: 200px; background: linear-gradient(180deg, #171a1f, #101113);
-    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
-    font-size: 11.5px; line-height: 1.5; color: var(--text); text-align: left; font-weight: 400;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 10;
-  }
-  .info-icon:hover .info-tooltip, .info-icon:focus .info-tooltip { display: block; }
   .withdraw-open-btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     background: linear-gradient(135deg, var(--amber), var(--amber-deep)); color: #1a0f00;
@@ -212,70 +194,12 @@
 
   .earnings-note { font-size: 12px; color: var(--muted); margin-top: 12px; text-align: center; }
 
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 200;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px;
-    background: rgba(4,6,9,0.65);
-    backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
-    opacity: 0; visibility: hidden; pointer-events: none;
-    transition: opacity 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease, visibility 0s linear 0.35s;
-  }
-  .modal-overlay.active {
-    opacity: 1; visibility: visible; pointer-events: auto;
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    transition: opacity 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease, visibility 0s linear 0s;
-  }
-  .modal-box {
-    position: relative; width: 100%; max-width: 440px;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
-    padding: 34px 30px;
-    box-shadow: 0 30px 100px rgba(0,0,0,0.65), 0 0 60px rgba(0,200,255,0.08);
-    transform: scale(0.92) translateY(20px); opacity: 0;
-    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
-  }
-  .modal-overlay.active .modal-box { transform: scale(1) translateY(0); opacity: 1; transition: transform 0.45s cubic-bezier(0.16,1,0.3,1) 0.05s, opacity 0.35s ease 0.05s; }
-  .modal-close {
-    position: absolute; top: 16px; right: 16px;
-    width: 32px; height: 32px; border-radius: 8px;
-    background: transparent; border: none; color: var(--muted); font-size: 18px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s, color 0.15s, transform 0.25s ease;
-  }
-  .modal-close:hover { background: rgba(255,255,255,0.06); color: var(--text); transform: rotate(90deg); }
-
-  .withdraw-state { display: none; }
-  .withdraw-state.active { display: block; animation: fadeInUp 0.35s cubic-bezier(0.22,1,0.36,1) both; }
-  .withdraw-title { font-family: 'Space Mono', monospace; font-size: 19px; font-weight: 700; margin-bottom: 8px; }
-  .withdraw-sub { font-size: 13.5px; color: var(--muted); margin-bottom: 22px; }
-  .withdraw-sub strong { color: var(--amber); font-family: 'Space Mono', monospace; }
-  .withdraw-field { margin-bottom: 16px; }
-  .withdraw-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
-  .withdraw-amount-row { display: flex; gap: 8px; }
-  .withdraw-input {
-    width: 100%; background: rgba(8,12,16,0.6); border: 1px solid var(--border); border-radius: 10px;
-    padding: 11px 14px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: var(--text);
-    outline: none; transition: border-color 0.2s, background 0.2s;
-  }
-  .withdraw-input::placeholder { color: var(--muted); }
-  .withdraw-input:focus { border-color: var(--frost-blue); background: rgba(8,12,16,0.85); }
-  .withdraw-max-btn {
-    flex-shrink: 0; background: rgba(255,202,40,0.12); border: 1px solid rgba(255,202,40,0.4); color: var(--amber);
-    font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; border-radius: 10px;
-    padding: 0 16px; cursor: pointer; transition: background 0.2s, border-color 0.2s;
-  }
-  .withdraw-max-btn:hover { background: rgba(255,202,40,0.2); }
-  .withdraw-checkbox-row { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
-  .withdraw-checkbox-row input { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--frost-blue); cursor: pointer; flex-shrink: 0; }
-  .withdraw-error { font-size: 12.5px; color: var(--red); margin: -4px 0 16px; }
-  .withdraw-btn {
-    width: 100%; padding: 13px; border: none; border-radius: 10px; cursor: pointer;
-    font-family: 'Space Grotesk', sans-serif; font-size: 14.5px; font-weight: 700;
-    background: linear-gradient(135deg, var(--amber), var(--amber-deep)); color: #1a0f00;
-    transition: transform 0.2s, box-shadow 0.25s, opacity 0.2s;
-  }
-  .withdraw-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,202,40,0.3); }
-  .withdraw-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .history-list { display: flex; flex-direction: column; }
+  .history-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--border); }
+  .history-row:last-child { border-bottom: none; }
+  .history-row-date { font-size: 11.5px; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .history-row-desc { font-size: 13.5px; color: var(--text); margin-top: 2px; }
+  .history-row-amount { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px; color: var(--amber); flex-shrink: 0; white-space: nowrap; }
 
   @media (max-width: 600px) {
     .partner-head { flex-wrap: wrap; }
@@ -388,13 +312,6 @@
       <div class="stat-tile earnings">
         <div class="num" id="statEarnings">—</div>
         <div class="label">Estimated earnings</div>
-        <div class="available-row">
-          <span>Available: <strong id="statAvailable">—</strong></span>
-          <span class="info-icon" tabindex="0">
-            i
-            <span class="info-tooltip">Money from an order is held for 1 month after that order's date before it can be withdrawn.</span>
-          </span>
-        </div>
         <button type="button" class="withdraw-open-btn" id="withdrawOpenBtn">Withdraw</button>
       </div>
       <div class="stat-tile"><div class="num" id="statRate">—</div><div class="label">Commission rate</div></div>
@@ -433,55 +350,18 @@
       </div>
       <p class="earnings-note">Earnings are an estimate based on logged orders — final payout is confirmed manually.</p>
     </div>
-  </div>
 
-</div>
-
-<div class="modal-overlay" id="withdrawModal">
-  <div class="modal-box">
-    <button type="button" class="modal-close" id="withdrawModalClose" aria-label="Close">✕</button>
-
-    <div class="withdraw-state active" id="withdrawStateForm">
-      <div class="withdraw-title">Withdraw Funds</div>
-      <p class="withdraw-sub">Available to withdraw: <strong id="withdrawAvailableText">—</strong></p>
-
-      <div class="withdraw-field">
-        <label>Amount</label>
-        <div class="withdraw-amount-row">
-          <input type="number" class="withdraw-input" id="withdrawAmount" placeholder="0.00" min="0" step="0.01"/>
-          <button type="button" class="withdraw-max-btn" id="withdrawMaxBtn">Max</button>
-        </div>
+    <div class="chart-section">
+      <div class="tracker-head">
+        <h2>Payment history</h2>
       </div>
-      <div class="withdraw-field">
-        <label>PayPal email</label>
-        <input type="email" class="withdraw-input" id="withdrawEmail1" placeholder="you@example.com" autocomplete="off"/>
+      <div class="chart-card">
+        <div class="history-list" id="paymentHistoryList"></div>
+        <div class="chart-empty" id="paymentHistoryEmpty" style="display:none;">No orders yet.</div>
       </div>
-      <div class="withdraw-field">
-        <label>Confirm PayPal email</label>
-        <input type="email" class="withdraw-input" id="withdrawEmail2" placeholder="you@example.com" autocomplete="off"/>
-      </div>
-      <label class="withdraw-checkbox-row">
-        <input type="checkbox" id="withdrawConfirmAmount"/>
-        <span>I understand the final paid amount may differ slightly from the estimate shown.</span>
-      </label>
-      <label class="withdraw-checkbox-row">
-        <input type="checkbox" id="withdrawConfirmEmail"/>
-        <span>I confirm my PayPal email above is correct.</span>
-      </label>
-      <p class="withdraw-error" id="withdrawFormError" style="display:none;"></p>
-      <button type="button" class="withdraw-btn" id="withdrawSubmitBtn" disabled>Submit Request</button>
-    </div>
-
-    <div class="withdraw-state" id="withdrawStateSubmitting">
-      <div class="spinner"></div>
-      <p class="withdraw-sub" style="text-align:center;margin-bottom:0;">Submitting your request…</p>
-    </div>
-
-    <div class="withdraw-state" id="withdrawStateDone">
-      <div class="withdraw-title">Request sent 🎉</div>
-      <p class="withdraw-sub" style="margin-bottom:0;">We'll process your withdrawal and reach out on Discord if we need anything else.</p>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -781,16 +661,47 @@
     document.getElementById('statEarnings').textContent = earnings.length
       ? earnings.map(e => e.amount.toFixed(2) + ' ' + e.currency.toUpperCase()).join(' + ')
       : '0';
-    const available = data.availableBalance;
-    document.getElementById('statAvailable').textContent = available
-      ? available.amount.toFixed(2) + ' ' + available.currency.toUpperCase()
-      : '0';
     const monthlyItems = (data.monthlyBreakdown || []).map(m => ({ label: formatMonthLabel(m.month), count: m.count }));
     renderBarChart('monthlyChart', 'monthlyChartEmpty', monthlyItems);
     renderTimeChart();
+    renderPaymentHistory(data);
 
     lastUpdatedAt = Date.now();
     updateLastUpdatedText();
+  }
+
+  function renderPaymentHistory(data) {
+    const listEl = document.getElementById('paymentHistoryList');
+    const emptyEl = document.getElementById('paymentHistoryEmpty');
+    const items = data.orderHistory || [];
+    listEl.innerHTML = '';
+    if (!items.length) {
+      emptyEl.style.display = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    items.forEach(function (item) {
+      const row = document.createElement('div');
+      row.className = 'history-row';
+
+      const main = document.createElement('div');
+      const dateEl = document.createElement('div');
+      dateEl.className = 'history-row-date';
+      dateEl.textContent = new Date(item.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      const descEl = document.createElement('div');
+      descEl.className = 'history-row-desc';
+      descEl.textContent = 'Order — ' + item.amount.toFixed(2) + ' ' + item.currency.toUpperCase();
+      main.appendChild(dateEl);
+      main.appendChild(descEl);
+
+      const amountEl = document.createElement('div');
+      amountEl.className = 'history-row-amount';
+      amountEl.textContent = '+' + item.commission.toFixed(2) + ' ' + item.currency.toUpperCase();
+
+      row.appendChild(main);
+      row.appendChild(amountEl);
+      listEl.appendChild(row);
+    });
   }
 
   let lastUpdatedAt = null;
@@ -915,105 +826,8 @@
     }
   });
 
-  // ---- Withdraw modal ----
-  const withdrawModal = document.getElementById('withdrawModal');
-  const withdrawStates = ['withdrawStateForm', 'withdrawStateSubmitting', 'withdrawStateDone'];
-  function showWithdrawState(id) {
-    withdrawStates.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
-  }
-  function withdrawAvailable() {
-    return (lastData && lastData.availableBalance) || { amount: 0, currency: 'eur' };
-  }
-  function resetWithdrawForm() {
-    document.getElementById('withdrawAmount').value = '';
-    document.getElementById('withdrawEmail1').value = '';
-    document.getElementById('withdrawEmail2').value = '';
-    document.getElementById('withdrawConfirmAmount').checked = false;
-    document.getElementById('withdrawConfirmEmail').checked = false;
-    document.getElementById('withdrawFormError').style.display = 'none';
-    showWithdrawState('withdrawStateForm');
-    updateWithdrawSubmitEnabled();
-  }
-  function updateWithdrawSubmitEnabled() {
-    const amount = parseFloat(document.getElementById('withdrawAmount').value);
-    const email1 = document.getElementById('withdrawEmail1').value.trim();
-    const email2 = document.getElementById('withdrawEmail2').value.trim();
-    const bal = withdrawAvailable();
-    const errEl = document.getElementById('withdrawFormError');
-    let error = '';
-    if (amount && amount > bal.amount + 0.001) error = 'Amount exceeds what you have available.';
-    else if (email1 && email2 && email1.toLowerCase() !== email2.toLowerCase()) error = 'Emails do not match.';
-    errEl.textContent = error;
-    errEl.style.display = error ? 'block' : 'none';
-
-    const emailOk = !!email1 && email1.toLowerCase() === email2.toLowerCase() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1);
-    const valid = amount > 0 && amount <= bal.amount + 0.001 && emailOk &&
-      document.getElementById('withdrawConfirmAmount').checked &&
-      document.getElementById('withdrawConfirmEmail').checked;
-    document.getElementById('withdrawSubmitBtn').disabled = !valid;
-  }
-  ['withdrawAmount', 'withdrawEmail1', 'withdrawEmail2'].forEach(id => {
-    document.getElementById(id).addEventListener('input', updateWithdrawSubmitEnabled);
-  });
-  ['withdrawConfirmAmount', 'withdrawConfirmEmail'].forEach(id => {
-    document.getElementById(id).addEventListener('change', updateWithdrawSubmitEnabled);
-  });
-  document.getElementById('withdrawMaxBtn').addEventListener('click', () => {
-    document.getElementById('withdrawAmount').value = withdrawAvailable().amount.toFixed(2);
-    updateWithdrawSubmitEnabled();
-  });
-
   document.getElementById('withdrawOpenBtn').addEventListener('click', () => {
-    resetWithdrawForm();
-    const bal = withdrawAvailable();
-    document.getElementById('withdrawAvailableText').textContent = bal.amount.toFixed(2) + ' ' + bal.currency.toUpperCase();
-    withdrawModal.classList.add('active');
-  });
-  document.getElementById('withdrawModalClose').addEventListener('click', () => withdrawModal.classList.remove('active'));
-  withdrawModal.addEventListener('click', e => { if (e.target === withdrawModal) withdrawModal.classList.remove('active'); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && withdrawModal.classList.contains('active')) withdrawModal.classList.remove('active'); });
-
-  document.getElementById('withdrawSubmitBtn').addEventListener('click', function () {
-    if (this.disabled) return;
-    const token = loadToken();
-    if (!token) return;
-    const amount = parseFloat(document.getElementById('withdrawAmount').value);
-    const email = document.getElementById('withdrawEmail1').value.trim();
-    showWithdrawState('withdrawStateSubmitting');
-    fetch(LITE_API_URL + '?action=partnerWithdraw', {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        partnerDashToken: token, amount: amount, paypalEmail: email,
-        confirmedAmount: true, confirmedEmail: true
-      })
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data && data.ok) {
-          showWithdrawState('withdrawStateDone');
-          recheckToken(token, true);
-          return;
-        }
-        showWithdrawState('withdrawStateForm');
-        const errEl = document.getElementById('withdrawFormError');
-        errEl.style.display = 'block';
-        if (data && data.error === 'exceeds_available') {
-          errEl.textContent = 'That exceeds what you have available (' + Number(data.available || 0).toFixed(2) + ' ' + String(data.currency || '').toUpperCase() + ').';
-        } else if (data && data.error === 'token_expired') {
-          clearToken();
-          withdrawModal.classList.remove('active');
-          show('stateLogin');
-        } else {
-          errEl.textContent = "Couldn't submit your request. Please try again.";
-        }
-      })
-      .catch(() => {
-        showWithdrawState('withdrawStateForm');
-        const errEl = document.getElementById('withdrawFormError');
-        errEl.style.display = 'block';
-        errEl.textContent = 'Network error. Please try again.';
-      });
+    window.location.href = 'withdraw.html';
   });
 
   (function init() {

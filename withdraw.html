@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Withdraw | Frost Partner Dashboard</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080c10; --surface: #111d2b; --surface2: #162233;
+    --frost-blue: #4fc8f8; --frost-deep: #1a7fc4; --frost-glow: #00c8ff;
+    --amber: #ffca28; --amber-deep: #ffa726;
+    --text: #e8f4fc; --muted: #6b8fa8; --border: rgba(79,200,248,0.15);
+    --red: #ff5c5c; --green: #3dff72;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; min-height: 100vh; }
+  .topo-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .topo-bg svg { width: 100%; height: 100%; opacity: 0.06; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 68px;
+    backdrop-filter: blur(20px); background: rgba(8,12,16,0.9);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700;
+    letter-spacing: -0.5px; color: var(--frost-blue);
+    text-shadow: 0 0 20px rgba(79,200,248,0.5); text-decoration: none;
+  }
+  .nav-logo-icon { width: 22px; height: 22px; filter: drop-shadow(0 0 6px rgba(79,200,248,0.5)); }
+  .nav-logo span { color: var(--text); }
+  .nav-back { color: var(--muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--text); }
+  @media (max-width: 480px) {
+    nav { padding: 0 16px; }
+    .nav-back { font-size: 12px; }
+  }
+
+  .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 140px 24px 100px; }
+
+  .gate { max-width: 460px; margin: 60px auto 0; text-align: center; }
+  .gate h1 {
+    font-family: 'Space Mono', monospace; font-size: clamp(26px, 4.5vw, 36px);
+    font-weight: 700; letter-spacing: -1px; margin-bottom: 14px;
+  }
+  .gate p { font-size: 14.5px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+
+  .spinner {
+    width: 30px; height: 30px; margin: 0 auto 20px;
+    border: 3px solid rgba(79,200,248,0.2); border-top-color: var(--frost-blue);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .btn-discord {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    background: #5865F2; color: #fff; text-decoration: none; border: none; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600;
+    padding: 14px 28px; border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.25s;
+  }
+  .btn-discord:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(88,101,242,0.4); }
+
+  .state { display: none; }
+  .state.active { display: block; animation: fadeInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) { .state.active { animation: none; } }
+
+  .page-head { margin-bottom: 32px; }
+  .page-head h1 { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-head p { font-size: 13.5px; color: var(--muted); }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 40px; }
+  .stat-tile {
+    background: linear-gradient(180deg, rgba(17,29,43,0.92), rgba(12,20,30,0.92));
+    border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;
+  }
+  .stat-tile .num {
+    font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--frost-blue);
+    margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .stat-tile.highlight .num { color: var(--amber); }
+  .stat-tile .label { font-size: 12px; color: var(--muted); }
+
+  .chart-section { margin-bottom: 24px; }
+  .tracker-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tracker-head h2 { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
+  .chart-card {
+    position: relative;
+    background: linear-gradient(180deg, rgba(17,29,43,0.92), rgba(12,20,30,0.92));
+    border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+  }
+  .chart-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13.5px; }
+
+  .withdraw-state { display: none; }
+  .withdraw-state.active { display: block; animation: fadeInUp 0.35s cubic-bezier(0.22,1,0.36,1) both; }
+  .withdraw-title { font-family: 'Space Mono', monospace; font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .withdraw-sub { font-size: 13.5px; color: var(--muted); margin-bottom: 22px; }
+  .withdraw-sub strong { color: var(--amber); font-family: 'Space Mono', monospace; }
+  .withdraw-field { margin-bottom: 16px; }
+  .withdraw-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
+  .withdraw-amount-row { display: flex; gap: 8px; }
+  .withdraw-input {
+    width: 100%; background: rgba(8,12,16,0.6); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 14px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: var(--text);
+    outline: none; transition: border-color 0.2s, background 0.2s;
+  }
+  .withdraw-input::placeholder { color: var(--muted); }
+  .withdraw-input:focus { border-color: var(--frost-blue); background: rgba(8,12,16,0.85); }
+  .withdraw-max-btn {
+    flex-shrink: 0; background: rgba(255,202,40,0.12); border: 1px solid rgba(255,202,40,0.4); color: var(--amber);
+    font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; border-radius: 10px;
+    padding: 0 16px; cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  }
+  .withdraw-max-btn:hover { background: rgba(255,202,40,0.2); }
+  .withdraw-checkbox-row { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+  .withdraw-checkbox-row input { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--frost-blue); cursor: pointer; flex-shrink: 0; }
+  .withdraw-error { font-size: 12.5px; color: var(--red); margin: -4px 0 16px; }
+  .withdraw-btn {
+    width: 100%; padding: 13px; border: none; border-radius: 10px; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; font-size: 14.5px; font-weight: 700;
+    background: linear-gradient(135deg, var(--amber), var(--amber-deep)); color: #1a0f00;
+    transition: transform 0.2s, box-shadow 0.25s, opacity 0.2s;
+  }
+  .withdraw-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,202,40,0.3); }
+  .withdraw-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .history-list { display: flex; flex-direction: column; }
+  .history-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--border); }
+  .history-row:last-child { border-bottom: none; }
+  .history-row-icon {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .history-row-icon.paid { background: rgba(61,255,114,0.15); color: var(--green); }
+  .history-row-icon.denied { background: rgba(255,92,92,0.15); color: var(--red); }
+  .history-row-icon.pending { background: rgba(255,202,40,0.15); color: var(--amber); }
+  .history-row-main { flex: 1; min-width: 0; }
+  .history-row-desc { font-size: 13.5px; color: var(--text); line-height: 1.5; }
+  .history-row-date { font-size: 11.5px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 3px; }
+
+  @media (max-width: 600px) {
+    .page-head { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="topo-bg">
+  <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs><style>.tline{fill:none;stroke:#4fc8f8;stroke-width:1.2;}</style></defs>
+    <path class="tline" d="M-100,200 C100,180 250,240 400,200 S650,140 800,200 S1050,280 1200,220 S1400,160 1500,200"/>
+    <path class="tline" d="M-100,340 C60,320 180,380 360,340 S580,255 740,330 S980,400 1160,345 S1360,290 1500,335"/>
+    <path class="tline" d="M-100,500 C20,480 140,540 320,500 S540,405 700,490 S940,545 1120,490 S1320,440 1500,490"/>
+    <path class="tline" d="M-100,660 C-20,640 100,700 280,660 S500,560 660,645 S900,705 1080,650 S1280,598 1500,648"/>
+  </svg>
+</div>
+
+<nav>
+  <a class="nav-logo" href="https://partner.frostclient.eu"><img src="favicon.ico" alt="" class="nav-logo-icon"/><span>PARTNER DASHBOARD</span></a>
+  <div class="nav-right">
+    <a class="nav-back" href="index.html">← Back to Dashboard</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div id="stateLoading" class="state active">
+    <div class="gate"><div class="spinner"></div></div>
+  </div>
+
+  <div id="stateError" class="state">
+    <div class="gate">
+      <h1>Something went wrong</h1>
+      <p id="errorText">Please try again.</p>
+      <button type="button" class="btn-discord" id="retryBtn" style="background:rgba(255,255,255,0.06);">Retry</button>
+    </div>
+  </div>
+
+  <div id="stateData" class="state">
+    <div class="page-head">
+      <h1>Withdraw</h1>
+      <p>Request a payout of your available balance.</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-tile"><div class="num" id="statEarnings">—</div><div class="label">Earnings</div></div>
+      <div class="stat-tile"><div class="num" id="statBalance">—</div><div class="label">Balance</div></div>
+      <div class="stat-tile highlight"><div class="num" id="statAvailable">—</div><div class="label">Available</div></div>
+    </div>
+
+    <div class="chart-section">
+      <div class="tracker-head"><h2>Request a withdrawal</h2></div>
+      <div class="chart-card">
+        <div class="withdraw-state active" id="withdrawStateForm">
+          <p class="withdraw-sub">Available to withdraw: <strong id="withdrawAvailableText">—</strong></p>
+
+          <div class="withdraw-field">
+            <label>Amount</label>
+            <div class="withdraw-amount-row">
+              <input type="number" class="withdraw-input" id="withdrawAmount" placeholder="0.00" min="0" step="0.01"/>
+              <button type="button" class="withdraw-max-btn" id="withdrawMaxBtn">Max</button>
+            </div>
+          </div>
+          <div class="withdraw-field">
+            <label>PayPal email</label>
+            <input type="email" class="withdraw-input" id="withdrawEmail1" placeholder="you@example.com" autocomplete="off"/>
+          </div>
+          <div class="withdraw-field">
+            <label>Confirm PayPal email</label>
+            <input type="email" class="withdraw-input" id="withdrawEmail2" placeholder="you@example.com" autocomplete="off"/>
+          </div>
+          <label class="withdraw-checkbox-row">
+            <input type="checkbox" id="withdrawConfirmAmount"/>
+            <span>I understand the final paid amount may differ slightly from the estimate shown.</span>
+          </label>
+          <label class="withdraw-checkbox-row">
+            <input type="checkbox" id="withdrawConfirmEmail"/>
+            <span>I confirm my PayPal email above is correct.</span>
+          </label>
+          <p class="withdraw-error" id="withdrawFormError" style="display:none;"></p>
+          <button type="button" class="withdraw-btn" id="withdrawSubmitBtn" disabled>Submit Request</button>
+        </div>
+
+        <div class="withdraw-state" id="withdrawStateSubmitting">
+          <div class="spinner"></div>
+          <p class="withdraw-sub" style="text-align:center;margin-bottom:0;">Submitting your request…</p>
+        </div>
+
+        <div class="withdraw-state" id="withdrawStateDone">
+          <div class="withdraw-title">Request sent 🎉</div>
+          <p class="withdraw-sub" style="margin-bottom:16px;">We'll process your withdrawal and reach out on Discord if we need anything else.</p>
+          <button type="button" class="withdraw-btn" id="withdrawAnotherBtn">Submit another request</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="tracker-head"><h2>Withdraw history</h2></div>
+      <div class="chart-card">
+        <div class="history-list" id="withdrawHistoryList"></div>
+        <div class="chart-empty" id="withdrawHistoryEmpty" style="display:none;">No withdrawal requests yet.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  const LITE_API_URL = 'https://script.google.com/macros/s/AKfycbxF57u1UNBsonktp5_2EseJtFkBZR0-CCxyazOGVUmEBrcwjU1-t6Us41gcrRqCsGcR/exec';
+  const TOKEN_KEY = 'frostPartnerDashToken';
+  const CACHE_KEY = 'frostPartnerDashCache';
+
+  const states = ['stateLoading', 'stateError', 'stateData'];
+  function show(id) {
+    states.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
+  }
+
+  function loadToken() {
+    try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+  }
+  function saveToken(t) {
+    try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {}
+  }
+  function clearToken() {
+    try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(CACHE_KEY); } catch (e) {}
+  }
+
+  function showError(msg) {
+    document.getElementById('errorText').textContent = msg || 'Please try again.';
+    show('stateError');
+  }
+
+  function fmtMoney(w) {
+    return w ? w.amount.toFixed(2) + ' ' + w.currency.toUpperCase() : '0';
+  }
+
+  let lastData = null;
+  function walletAvailable() {
+    return (lastData && lastData.walletSummary && lastData.walletSummary.available) || { amount: 0, currency: 'eur' };
+  }
+
+  function renderWithdrawHistory(data) {
+    const listEl = document.getElementById('withdrawHistoryList');
+    const emptyEl = document.getElementById('withdrawHistoryEmpty');
+    const items = data.withdrawHistory || [];
+    listEl.innerHTML = '';
+    if (!items.length) {
+      emptyEl.style.display = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    items.forEach(function (item) {
+      const row = document.createElement('div');
+      row.className = 'history-row';
+
+      const icon = document.createElement('div');
+      const main = document.createElement('div');
+      main.className = 'history-row-main';
+      const descEl = document.createElement('div');
+      descEl.className = 'history-row-desc';
+      const dateEl = document.createElement('div');
+      dateEl.className = 'history-row-date';
+      dateEl.textContent = item.timestamp
+        ? new Date(item.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+        : '';
+
+      const amountStr = item.amount.toFixed(2) + ' ' + item.currency.toUpperCase();
+      if (item.status === 'paid') {
+        icon.className = 'history-row-icon paid';
+        icon.textContent = '✓';
+        const paidStr = (item.paidAmount > 0 ? item.paidAmount : item.amount).toFixed(2) + ' ' + item.currency.toUpperCase();
+        descEl.textContent = 'You were sent ' + paidStr;
+      } else if (item.status === 'denied') {
+        icon.className = 'history-row-icon denied';
+        icon.textContent = '✕';
+        descEl.textContent = 'Your request for ' + amountStr + ' was denied. Contact us on Discord if this is a mistake.';
+      } else {
+        icon.className = 'history-row-icon pending';
+        icon.textContent = '⏳';
+        descEl.textContent = 'You requested to withdraw ' + amountStr + ' to ' + item.paypalEmail;
+      }
+
+      main.appendChild(descEl);
+      main.appendChild(dateEl);
+      row.appendChild(icon);
+      row.appendChild(main);
+      listEl.appendChild(row);
+    });
+  }
+
+  function renderWallet(data) {
+    lastData = data;
+    const wallet = data.walletSummary || {};
+    document.getElementById('statEarnings').textContent = fmtMoney(wallet.earnings);
+    document.getElementById('statBalance').textContent = fmtMoney(wallet.balance);
+    document.getElementById('statAvailable').textContent = fmtMoney(wallet.available);
+    document.getElementById('withdrawAvailableText').textContent = fmtMoney(wallet.available);
+    renderWithdrawHistory(data);
+    updateWithdrawSubmitEnabled();
+  }
+
+  function handleResponse(data) {
+    if (!data || !data.ok || data.status !== 'eligible') {
+      if (data && data.error === 'token_expired') clearToken();
+      window.location.href = 'index.html';
+      return;
+    }
+    if (data.partnerDashToken) saveToken(data.partnerDashToken);
+    show('stateData');
+    renderWallet(data);
+  }
+
+  function recheckToken(token) {
+    return fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(handleResponse)
+      .catch(() => showError('Network error while contacting the server. Please try again.'));
+  }
+
+  document.getElementById('retryBtn').addEventListener('click', () => {
+    const token = loadToken();
+    if (!token) { window.location.href = 'index.html'; return; }
+    show('stateLoading');
+    recheckToken(token);
+  });
+  const withdrawStates = ['withdrawStateForm', 'withdrawStateSubmitting', 'withdrawStateDone'];
+  function showWithdrawState(id) {
+    withdrawStates.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
+  }
+  function resetWithdrawForm() {
+    document.getElementById('withdrawAmount').value = '';
+    document.getElementById('withdrawEmail1').value = '';
+    document.getElementById('withdrawEmail2').value = '';
+    document.getElementById('withdrawConfirmAmount').checked = false;
+    document.getElementById('withdrawConfirmEmail').checked = false;
+    document.getElementById('withdrawFormError').style.display = 'none';
+    showWithdrawState('withdrawStateForm');
+    updateWithdrawSubmitEnabled();
+  }
+  function updateWithdrawSubmitEnabled() {
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    const email1 = document.getElementById('withdrawEmail1').value.trim();
+    const email2 = document.getElementById('withdrawEmail2').value.trim();
+    const bal = walletAvailable();
+    const errEl = document.getElementById('withdrawFormError');
+    let error = '';
+    if (amount && amount > bal.amount + 0.001) error = 'Amount exceeds what you have available.';
+    else if (email1 && email2 && email1.toLowerCase() !== email2.toLowerCase()) error = 'Emails do not match.';
+    errEl.textContent = error;
+    errEl.style.display = error ? 'block' : 'none';
+
+    const emailOk = !!email1 && email1.toLowerCase() === email2.toLowerCase() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1);
+    const valid = amount > 0 && amount <= bal.amount + 0.001 && emailOk &&
+      document.getElementById('withdrawConfirmAmount').checked &&
+      document.getElementById('withdrawConfirmEmail').checked;
+    document.getElementById('withdrawSubmitBtn').disabled = !valid;
+  }
+  ['withdrawAmount', 'withdrawEmail1', 'withdrawEmail2'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateWithdrawSubmitEnabled);
+  });
+  ['withdrawConfirmAmount', 'withdrawConfirmEmail'].forEach(id => {
+    document.getElementById(id).addEventListener('change', updateWithdrawSubmitEnabled);
+  });
+  document.getElementById('withdrawMaxBtn').addEventListener('click', () => {
+    document.getElementById('withdrawAmount').value = walletAvailable().amount.toFixed(2);
+    updateWithdrawSubmitEnabled();
+  });
+  document.getElementById('withdrawAnotherBtn').addEventListener('click', resetWithdrawForm);
+
+  document.getElementById('withdrawSubmitBtn').addEventListener('click', function () {
+    if (this.disabled) return;
+    const token = loadToken();
+    if (!token) { window.location.href = 'index.html'; return; }
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    const email = document.getElementById('withdrawEmail1').value.trim();
+    showWithdrawState('withdrawStateSubmitting');
+    fetch(LITE_API_URL + '?action=partnerWithdraw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        partnerDashToken: token, amount: amount, paypalEmail: email,
+        confirmedAmount: true, confirmedEmail: true
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.ok) {
+          showWithdrawState('withdrawStateDone');
+          recheckToken(token);
+          return;
+        }
+        showWithdrawState('withdrawStateForm');
+        const errEl = document.getElementById('withdrawFormError');
+        errEl.style.display = 'block';
+        if (data && data.error === 'exceeds_available') {
+          errEl.textContent = 'That exceeds what you have available (' + Number(data.available || 0).toFixed(2) + ' ' + String(data.currency || '').toUpperCase() + ').';
+        } else if (data && data.error === 'token_expired') {
+          clearToken();
+          window.location.href = 'index.html';
+        } else {
+          errEl.textContent = "Couldn't submit your request. Please try again.";
+        }
+      })
+      .catch(() => {
+        showWithdrawState('withdrawStateForm');
+        const errEl = document.getElementById('withdrawFormError');
+        errEl.style.display = 'block';
+        errEl.textContent = 'Network error. Please try again.';
+      });
+  });
+
+  (function init() {
+    const token = loadToken();
+    if (!token) { window.location.href = 'index.html'; return; }
+    show('stateLoading');
+    recheckToken(token);
+  })();
+})();
+</script>
+</body>
+</html>
