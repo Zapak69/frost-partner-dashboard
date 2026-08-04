@@ -104,10 +104,21 @@
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @media (prefers-reduced-motion: reduce) { .state.active { animation: none; } }
 
-  .partner-head { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; }
+  .partner-head { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; flex-wrap: wrap; }
   .partner-avatar { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--border); }
   .partner-head h1 { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
   .partner-head p { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+  .refresh-info { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .refresh-info span { font-size: 12px; color: var(--muted); }
+  .refresh-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    color: var(--muted); font-size: 15px; cursor: pointer; padding: 0;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .refresh-btn:hover { color: var(--text); border-color: var(--frost-blue); background: rgba(79,200,248,0.1); }
+  .refresh-btn.spinning { animation: spin 0.8s linear infinite; pointer-events: none; }
 
   .code-card {
     border: 1px solid rgba(255,202,40,0.4); border-radius: 18px;
@@ -264,6 +275,10 @@
       <div>
         <h1 id="partnerName">—</h1>
         <p id="partnerRate">—</p>
+      </div>
+      <div class="refresh-info">
+        <button type="button" class="refresh-btn" id="refreshBtn" title="Refresh now" aria-label="Refresh now">↻</button>
+        <span id="lastUpdatedText"></span>
       </div>
     </div>
 
@@ -615,7 +630,22 @@
     const monthlyItems = (data.monthlyBreakdown || []).map(m => ({ label: formatMonthLabel(m.month), count: m.count }));
     renderBarChart('monthlyChart', 'monthlyChartEmpty', monthlyItems);
     renderTimeChart();
+
+    lastUpdatedAt = Date.now();
+    updateLastUpdatedText();
   }
+
+  let lastUpdatedAt = null;
+  function updateLastUpdatedText() {
+    const el = document.getElementById('lastUpdatedText');
+    if (!el) return;
+    if (!lastUpdatedAt) { el.textContent = ''; return; }
+    const secs = Math.round((Date.now() - lastUpdatedAt) / 1000);
+    if (secs < 10) el.textContent = 'Updated just now';
+    else if (secs < 60) el.textContent = 'Updated ' + secs + 's ago';
+    else el.textContent = 'Updated ' + Math.round(secs / 60) + 'm ago';
+  }
+  setInterval(updateLastUpdatedText, 5000);
 
   function handleResponse(data) {
     if (!data || !data.ok) {
@@ -635,6 +665,7 @@
       saveCache(data);
       renderDashboard(data);
       show('stateData');
+      startAutoRefresh();
       return;
     }
     showError('Unexpected response. Please try again.');
@@ -649,11 +680,37 @@
   }
 
   function recheckToken(token, isBackground) {
-    fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
+    return fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
       .then(r => r.json())
-      .then(data => { if (!isBackground || (data && data.ok)) handleResponse(data); })
+      .then(data => { if (!isBackground || (data && data.ok)) handleResponse(data); return data; })
       .catch(() => { if (!isBackground) showError('Network error while contacting the server. Please try again.'); });
   }
+  let refreshTimer = null;
+  function startAutoRefresh() {
+    clearInterval(refreshTimer);
+    refreshTimer = setInterval(() => {
+      if (document.hidden) return;
+      const token = loadToken();
+      if (token) recheckToken(token, true);
+    }, 30000);
+  }
+  function stopAutoRefresh() {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden || !document.getElementById('stateData').classList.contains('active')) return;
+    const token = loadToken();
+    if (token) recheckToken(token, true);
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', function () {
+    const token = loadToken();
+    if (!token) return;
+    const btn = this;
+    btn.classList.add('spinning');
+    recheckToken(token, true).finally(() => btn.classList.remove('spinning'));
+  });
 
   const loginBtn = document.getElementById('loginBtn');
   function startLogin() {
@@ -679,6 +736,9 @@
 
   document.getElementById('navLogoutBtn').addEventListener('click', () => {
     clearToken();
+    stopAutoRefresh();
+    lastUpdatedAt = null;
+    updateLastUpdatedText();
     show('stateLogin');
   });
 
@@ -737,6 +797,7 @@
     if (cached) {
       renderDashboard(cached);
       show('stateData');
+      startAutoRefresh();
       recheckToken(token, true);
     } else {
       show('stateWorking');
