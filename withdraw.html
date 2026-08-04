@@ -343,6 +343,12 @@ for (let i = 0; i < 100; i++) particles.push({
   function clearToken() {
     try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(CACHE_KEY); } catch (e) {}
   }
+  function saveCache(data) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+  function loadCache() {
+    try { const raw = localStorage.getItem(CACHE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
 
   function showError(msg) {
     document.getElementById('errorText').textContent = msg || 'Please try again.';
@@ -419,22 +425,24 @@ for (let i = 0; i < 100; i++) particles.push({
     updateWithdrawSubmitEnabled();
   }
 
-  function handleResponse(data) {
+  function handleResponse(data, isBackground) {
     if (!data || !data.ok || data.status !== 'eligible') {
+      if (isBackground) return;
       if (data && data.error === 'token_expired') clearToken();
       window.location.href = 'index';
       return;
     }
     if (data.partnerDashToken) saveToken(data.partnerDashToken);
+    saveCache(data);
     show('stateData');
     renderWallet(data);
   }
 
-  function recheckToken(token) {
+  function recheckToken(token, isBackground) {
     return fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
       .then(r => r.json())
-      .then(handleResponse)
-      .catch(() => showError('Network error while contacting the server. Please try again.'));
+      .then(data => handleResponse(data, isBackground))
+      .catch(() => { if (!isBackground) showError('Network error while contacting the server. Please try again.'); });
   }
 
   document.getElementById('retryBtn').addEventListener('click', () => {
@@ -532,8 +540,15 @@ for (let i = 0; i < 100; i++) particles.push({
   (function init() {
     const token = loadToken();
     if (!token) { window.location.href = 'index'; return; }
-    show('stateLoading');
-    recheckToken(token);
+    const cached = loadCache();
+    if (cached && cached.status === 'eligible' && cached.walletSummary) {
+      show('stateData');
+      renderWallet(cached);
+      recheckToken(token, true);
+    } else {
+      show('stateLoading');
+      recheckToken(token);
+    }
   })();
 })();
 </script>
