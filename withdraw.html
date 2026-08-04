@@ -333,7 +333,8 @@
       } else if (item.status === 'denied') {
         icon.className = 'history-row-icon denied';
         icon.textContent = '✕';
-        descEl.textContent = 'Your request for ' + amountStr + ' was denied. Contact us on Discord if this is a mistake.';
+        descEl.textContent = 'Request ' + amountStr + ' denied. Contact us on Discord for more information.'
+          + (item.requestId ? ' Request ID: ' + item.requestId : '');
       } else {
         icon.className = 'history-row-icon pending';
         icon.textContent = '⏳';

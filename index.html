@@ -186,6 +186,10 @@
   }
   .range-btn:hover { color: var(--text); }
   .range-btn.active { background: var(--frost-blue); color: #06121c; }
+  .chart-type-switch { width: fit-content; margin-bottom: 16px; }
+  .chart-view { display: none; }
+  .chart-view.active { display: block; animation: fadeInUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @media (prefers-reduced-motion: reduce) { .chart-view.active { animation: none; } }
   .chart-subline { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
   .chart-subline strong { color: var(--text); font-family: 'Space Mono', monospace; }
   .chart-svg { display: block; width: 100%; height: 220px; overflow: visible; }
@@ -330,7 +334,7 @@
 
     <div class="chart-section">
       <div class="tracker-head">
-        <h2>Orders over time</h2>
+        <h2>Orders</h2>
         <div class="range-switch" id="rangeSwitch">
           <button type="button" class="range-btn" data-range="1h">1h</button>
           <button type="button" class="range-btn" data-range="12h">12h</button>
@@ -342,22 +346,24 @@
         </div>
       </div>
       <div class="chart-card">
-        <div class="chart-subline" id="timeChartSubline"></div>
-        <div class="chart-loading" id="timeChartLoading">Loading graph...</div>
-        <svg id="timeChart" class="chart-svg" viewBox="0 0 1000 220"></svg>
-        <div class="chart-tooltip" id="timeChartTooltip"></div>
-        <div class="chart-empty" id="timeChartEmpty" style="display:none;">No orders yet.</div>
-      </div>
-    </div>
+        <div class="range-switch chart-type-switch" id="chartTypeSwitch">
+          <button type="button" class="range-btn active" data-chart="time">Over time</button>
+          <button type="button" class="range-btn" data-chart="monthly">Per month</button>
+        </div>
 
-    <div class="chart-section">
-      <div class="tracker-head">
-        <h2>Orders per month</h2>
-      </div>
-      <div class="chart-card">
-        <div class="chart-loading" id="monthlyChartLoading">Loading graph...</div>
-        <svg id="monthlyChart" class="chart-svg-version" viewBox="0 0 1000 220"></svg>
-        <div class="chart-empty" id="monthlyChartEmpty" style="display:none;">No orders yet.</div>
+        <div class="chart-view active" id="chartViewTime">
+          <div class="chart-subline" id="timeChartSubline"></div>
+          <div class="chart-loading" id="timeChartLoading">Loading graph...</div>
+          <svg id="timeChart" class="chart-svg" viewBox="0 0 1000 220"></svg>
+          <div class="chart-tooltip" id="timeChartTooltip"></div>
+          <div class="chart-empty" id="timeChartEmpty" style="display:none;">No orders yet.</div>
+        </div>
+
+        <div class="chart-view" id="chartViewMonthly">
+          <div class="chart-loading" id="monthlyChartLoading">Loading graph...</div>
+          <svg id="monthlyChart" class="chart-svg-version" viewBox="0 0 1000 220"></svg>
+          <div class="chart-empty" id="monthlyChartEmpty" style="display:none;">No orders yet.</div>
+        </div>
       </div>
       <p class="earnings-note">Earnings are an estimate based on logged orders — final payout is confirmed manually.</p>
     </div>
@@ -586,8 +592,7 @@
       const px = xPix(nearest.t), py = yPix(nearest.value);
       crosshair.setAttribute('x1', px); crosshair.setAttribute('x2', px); crosshair.setAttribute('opacity', 1);
       hoverDot.setAttribute('cx', px); hoverDot.setAttribute('cy', py); hoverDot.setAttribute('opacity', 1);
-
-      const containerRect = svg.parentElement.getBoundingClientRect();
+      const containerRect = tooltip.closest('.chart-card').getBoundingClientRect();
       const left = (px / W) * rect.width + (rect.left - containerRect.left);
       const top = (py / H) * rect.height + (rect.top - containerRect.top);
       tooltip.style.display = 'block';
@@ -618,6 +623,20 @@
     document.querySelectorAll('#rangeSwitch .range-btn').forEach(b => b.classList.toggle('active', b === btn));
     currentRange = btn.dataset.range;
     renderTimeChart();
+  });
+
+  let currentChartType = 'time';
+  let lastMonthlyItems = [];
+  document.getElementById('chartTypeSwitch').addEventListener('click', function (e) {
+    const btn = e.target.closest('.range-btn');
+    if (!btn || btn.classList.contains('active')) return;
+    document.querySelectorAll('#chartTypeSwitch .range-btn').forEach(b => b.classList.toggle('active', b === btn));
+    currentChartType = btn.dataset.chart;
+    document.getElementById('rangeSwitch').style.display = currentChartType === 'time' ? 'flex' : 'none';
+    document.getElementById('chartViewTime').classList.toggle('active', currentChartType === 'time');
+    document.getElementById('chartViewMonthly').classList.toggle('active', currentChartType === 'monthly');
+    if (currentChartType === 'time') renderTimeChart();
+    else renderBarChart('monthlyChart', 'monthlyChartEmpty', lastMonthlyItems);
   });
 
   function renderBarChart(svgId, emptyId, items) {
@@ -673,9 +692,9 @@
     document.getElementById('statEarnings').textContent = earnings.length
       ? earnings.map(e => e.amount.toFixed(2) + ' ' + e.currency.toUpperCase()).join(' + ')
       : '0';
-    const monthlyItems = (data.monthlyBreakdown || []).map(m => ({ label: formatMonthLabel(m.month), count: m.count }));
-    renderBarChart('monthlyChart', 'monthlyChartEmpty', monthlyItems);
-    renderTimeChart();
+    lastMonthlyItems = (data.monthlyBreakdown || []).map(m => ({ label: formatMonthLabel(m.month), count: m.count }));
+    if (currentChartType === 'monthly') renderBarChart('monthlyChart', 'monthlyChartEmpty', lastMonthlyItems);
+    else renderTimeChart();
     renderPaymentHistory(data);
 
     lastUpdatedAt = Date.now();
