@@ -105,6 +105,9 @@
     font-size: 15px; color: var(--muted); line-height: 1.75; margin-bottom: 32px;
     max-width: 480px; margin-left: auto; margin-right: auto;
   }
+  .login-become-partner { font-size: 13px; color: var(--muted); margin-top: 16px; }
+  .login-become-partner a { color: var(--frost-blue); text-decoration: none; font-weight: 600; transition: color 0.2s; }
+  .login-become-partner a:hover { color: var(--frost-light, var(--text)); text-decoration: underline; }
   .login-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 48px; text-align: left; }
   .login-feature {
     background: linear-gradient(180deg, rgba(17,29,43,0.7), rgba(12,20,30,0.7));
@@ -157,6 +160,23 @@
   .partner-avatar { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--border); }
   .partner-head h1 { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
   .partner-head p { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+  .partner-name-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .tier-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'Space Mono', monospace; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 20px;
+    background: rgba(79,200,248,0.12); border: 1px solid rgba(79,200,248,0.35); color: var(--frost-blue);
+  }
+  .tier-badge.plus {
+    background: linear-gradient(135deg, rgba(255,202,40,0.24), rgba(255,167,38,0.14));
+    border: 1px solid rgba(255,202,40,0.55); color: #ffca28;
+    animation: badgeGlow 2.5s ease-in-out infinite;
+  }
+  @keyframes badgeGlow {
+    0%, 100% { box-shadow: 0 0 10px rgba(255,202,40,0.18); }
+    50% { box-shadow: 0 0 20px rgba(255,202,40,0.45); }
+  }
+  @media (prefers-reduced-motion: reduce) { .tier-badge.plus { animation: none; box-shadow: 0 0 14px rgba(255,202,40,0.3); } }
   .refresh-info { margin-left: auto; display: flex; align-items: center; gap: 10px; }
   .refresh-info span { font-size: 12px; color: var(--muted); }
   .refresh-btn {
@@ -317,6 +337,7 @@
       <button type="button" class="btn-discord" id="loginBtn">
         <img src="https://frostclient.eu/icons/discord.webp" alt=""/> Sign in with Discord
       </button>
+      <p class="login-become-partner">Not a partner yet? <a href="https://frostclient.eu/partner">Become a partner →</a></p>
 
       <div class="login-features">
         <div class="login-feature">
@@ -384,7 +405,10 @@
     <div class="partner-head">
       <img class="partner-avatar" id="partnerAvatar" src="" alt=""/>
       <div>
-        <h1 id="partnerName">—</h1>
+        <div class="partner-name-row">
+          <h1 id="partnerName">—</h1>
+          <span class="tier-badge" id="partnerTierBadge"></span>
+        </div>
         <p id="partnerRate">—</p>
       </div>
       <div class="refresh-info">
@@ -803,6 +827,10 @@ for (let i = 0; i < 100; i++) particles.push({
     document.getElementById('partnerAvatar').src = avatarUrl(data.user);
     document.getElementById('partnerName').textContent = (data.user && (data.user.name || data.user.username)) || 'Partner';
     document.getElementById('partnerRate').textContent = data.percentage + '% commission on referred orders';
+    const isPartnerPlus = data.percentage >= 30;
+    const tierBadge = document.getElementById('partnerTierBadge');
+    tierBadge.textContent = isPartnerPlus ? 'Partner+' : 'Partner';
+    tierBadge.className = 'tier-badge' + (isPartnerPlus ? ' plus' : '');
     document.getElementById('partnerCode').textContent = data.code || '—';
     document.getElementById('statTotalOrders').textContent = data.totalOrders != null ? data.totalOrders : '—';
     document.getElementById('statMonthOrders').textContent = data.currentMonthOrders != null ? data.currentMonthOrders : '—';
