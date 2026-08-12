@@ -338,14 +338,43 @@
   }
   .notif-panel-actions button:hover { color: var(--frost-blue); background: rgba(79,200,248,0.1); }
   .notif-panel-list { overflow-y: auto; padding: 6px; }
-  .notif-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 10px; border-radius: 10px; margin-bottom: 2px; }
+  .notif-item {
+    position: relative; display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 30px 10px 10px; border-radius: 10px; margin-bottom: 2px;
+    cursor: grab; user-select: none;
+  }
+  .notif-item.dragging { cursor: grabbing; }
   .notif-item.unread { background: rgba(79,200,248,0.08); box-shadow: inset 2px 0 0 var(--frost-blue); }
   .notif-item-icon { font-size: 16px; line-height: 1; margin-top: 1px; flex-shrink: 0; }
   .notif-item-body { flex: 1; min-width: 0; }
   .notif-item-title { font-size: 12.5px; font-weight: 700; color: var(--text); }
   .notif-item-desc { font-size: 11.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
-  .notif-item-time { font-size: 10px; color: var(--muted); opacity: 0.7; margin-top: 4px; font-family: 'Space Mono', monospace; }
+  .notif-item-footer { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 5px; }
+  .notif-item-time { font-size: 10px; color: var(--muted); opacity: 0.7; font-family: 'Space Mono', monospace; flex-shrink: 0; }
+  .notif-item-action { font-size: 10.5px; font-weight: 700; color: var(--frost-blue); text-decoration: none; white-space: nowrap; }
+  .notif-item-action:hover { text-decoration: underline; }
+  .notif-item-delete {
+    position: absolute; top: 8px; right: 8px;
+    width: 21px; height: 21px; border-radius: 6px;
+    background: rgba(255,92,92,0.12); border: 1px solid rgba(255,92,92,0.3); color: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; line-height: 1; cursor: pointer; padding: 0;
+    opacity: 0; transition: opacity 0.15s, background 0.2s;
+  }
+  .notif-item:hover .notif-item-delete { opacity: 1; }
+  .notif-item-delete:hover { background: rgba(255,92,92,0.28); }
   .notif-empty { text-align: center; padding: 32px 16px; color: var(--muted); font-size: 12.5px; }
+
+  .refresh-progress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 100%; z-index: 900;
+    background: var(--frost-blue); box-shadow: 0 0 8px rgba(79,200,248,0.6);
+    transform: scaleX(0); transform-origin: left; opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+  .refresh-progress.active { opacity: 1; transform: scaleX(0.7); transition: transform 6s cubic-bezier(0.1,0.6,0.2,1), opacity 0.2s ease; }
+  .refresh-progress.done { opacity: 1; transform: scaleX(1); transition: transform 0.25s ease; }
+  @media (prefers-reduced-motion: reduce) { .refresh-progress, .refresh-progress.active, .refresh-progress.done { transition: opacity 0.2s ease; } }
   .withdraw-open-btn {
     display: none; align-items: center; justify-content: center; gap: 6px;
     background: linear-gradient(135deg, var(--amber), var(--amber-deep)); color: #1a0f00;
@@ -599,6 +628,7 @@
 </div>
 <canvas id="particles"></canvas>
 
+<div class="refresh-progress" id="refreshProgress"></div>
 <div class="toast-stack" id="toastStack"></div>
 
 <nav>
@@ -1359,13 +1389,22 @@ for (let i = 0; i < 100; i++) particles.push({
   function saveNotifications(list) {
     try { localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(list)); } catch (e) {}
   }
-  function addNotification(icon, title, desc) {
+  function addNotification(icon, title, desc, actionLabel, actionHref) {
     const list = loadNotifications();
-    list.unshift({ id: Date.now() + '_' + Math.random().toString(36).slice(2, 8), icon: icon, title: title, desc: desc || '', ts: Date.now(), read: false });
+    list.unshift({
+      id: Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      icon: icon, title: title, desc: desc || '',
+      actionLabel: actionLabel || '', actionHref: actionHref || '',
+      ts: Date.now(), read: false
+    });
     if (list.length > MAX_NOTIFICATIONS) list.length = MAX_NOTIFICATIONS;
     saveNotifications(list);
     updateNotifBadge();
     if (notifPanelOpen) renderNotifPanel();
+  }
+  function removeNotification(id) {
+    saveNotifications(loadNotifications().filter(function (n) { return n.id !== id; }));
+    updateNotifBadge();
   }
   function updateNotifBadge() {
     const badge = document.getElementById('notifBadge');
@@ -1374,16 +1413,47 @@ for (let i = 0; i < 100; i++) particles.push({
     if (unread > 0) { badge.textContent = unread > 99 ? '99+' : String(unread); badge.style.display = 'flex'; }
     else { badge.style.display = 'none'; }
   }
-  function formatRelativeTime(ts) {
-    const diff = Math.max(0, Date.now() - ts);
-    const min = Math.floor(diff / 60000);
-    if (min < 1) return 'just now';
-    if (min < 60) return min + 'm ago';
-    const hr = Math.floor(min / 60);
-    if (hr < 24) return hr + 'h ago';
-    return Math.floor(hr / 24) + 'd ago';
+  function formatNotifTime(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (d.toDateString() === now.toDateString()) return timeStr;
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday, ' + timeStr;
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + timeStr;
   }
   let notifPanelOpen = false;
+  let notifDrag = null;
+  function notifDragMove(clientX) {
+    if (!notifDrag) return;
+    notifDrag.currentX = clientX;
+    const dx = Math.min(0, clientX - notifDrag.startX);
+    notifDrag.el.style.transform = 'translateX(' + dx + 'px)';
+    const ratio = Math.min(1, Math.abs(dx) / 120);
+    notifDrag.el.style.background = 'rgba(255,92,92,' + (ratio * 0.35) + ')';
+  }
+  function notifDragEnd() {
+    if (!notifDrag) return;
+    const state = notifDrag;
+    notifDrag = null;
+    state.el.classList.remove('dragging');
+    const dx = Math.min(0, state.currentX - state.startX);
+    if (Math.abs(dx) > 90) {
+      state.el.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
+      state.el.style.transform = 'translateX(-100%)';
+      state.el.style.opacity = '0';
+      setTimeout(function () { removeNotification(state.id); renderNotifPanel(); }, 200);
+    } else {
+      state.el.style.transition = 'transform 0.2s ease, background 0.2s ease';
+      state.el.style.transform = 'translateX(0)';
+      state.el.style.background = '';
+    }
+  }
+  document.addEventListener('mousemove', function (e) { notifDragMove(e.clientX); });
+  document.addEventListener('touchmove', function (e) { if (notifDrag) notifDragMove(e.touches[0].clientX); }, { passive: true });
+  document.addEventListener('mouseup', notifDragEnd);
+  document.addEventListener('touchend', notifDragEnd);
   function renderNotifPanel() {
     const list = loadNotifications();
     const listEl = document.getElementById('notifPanelList');
@@ -1410,16 +1480,54 @@ for (let i = 0; i < 100; i++) particles.push({
       const desc = document.createElement('div');
       desc.className = 'notif-item-desc';
       desc.textContent = n.desc;
-      const time = document.createElement('div');
+      const footer = document.createElement('div');
+      footer.className = 'notif-item-footer';
+      const time = document.createElement('span');
       time.className = 'notif-item-time';
-      time.textContent = formatRelativeTime(n.ts);
-      body.appendChild(title); body.appendChild(desc); body.appendChild(time);
-      item.appendChild(icon); item.appendChild(body);
+      time.textContent = formatNotifTime(n.ts);
+      footer.appendChild(time);
+      if (n.actionLabel && n.actionHref) {
+        const action = document.createElement('a');
+        action.className = 'notif-item-action';
+        action.href = n.actionHref;
+        action.textContent = n.actionLabel + ' →';
+        footer.appendChild(action);
+      }
+      body.appendChild(title); body.appendChild(desc); body.appendChild(footer);
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'notif-item-delete';
+      deleteBtn.setAttribute('aria-label', 'Delete notification');
+      deleteBtn.textContent = '✕';
+      deleteBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        removeNotification(n.id);
+        renderNotifPanel();
+      });
+      item.appendChild(icon); item.appendChild(body); item.appendChild(deleteBtn);
+      const startDrag = function (e) {
+        if (e.target === deleteBtn) return;
+        notifDrag = { id: n.id, el: item, startX: (e.touches ? e.touches[0].clientX : e.clientX), currentX: 0 };
+        item.classList.add('dragging');
+        item.style.transition = 'none';
+      };
+      item.addEventListener('mousedown', startDrag);
+      item.addEventListener('touchstart', startDrag, { passive: true });
       listEl.appendChild(item);
     });
   }
+  function positionNotifPanel() {
+    const bell = document.getElementById('notifBellBtn');
+    const panel = document.getElementById('notifPanel');
+    if (!bell || !panel) return;
+    const rect = bell.getBoundingClientRect();
+    panel.style.top = (rect.bottom + 10) + 'px';
+    panel.style.right = Math.max(12, window.innerWidth - rect.right) + 'px';
+    panel.style.left = 'auto';
+  }
   function toggleNotifPanel() {
     notifPanelOpen = !notifPanelOpen;
+    if (notifPanelOpen) positionNotifPanel();
     document.getElementById('notifPanel').classList.toggle('open', notifPanelOpen);
     document.getElementById('notifBellBtn').classList.toggle('active', notifPanelOpen);
     if (notifPanelOpen) renderNotifPanel();
@@ -1439,6 +1547,7 @@ for (let i = 0; i < 100; i++) particles.push({
       updateNotifBadge();
       renderNotifPanel();
     });
+    window.addEventListener('resize', function () { if (notifPanelOpen) positionNotifPanel(); });
     document.addEventListener('click', function (e) {
       const panel = document.getElementById('notifPanel');
       if (notifPanelOpen && !panel.contains(e.target) && e.target !== notifBellBtn && !notifBellBtn.contains(e.target)) {
@@ -1449,8 +1558,8 @@ for (let i = 0; i < 100; i++) particles.push({
     });
     updateNotifBadge();
   }
-  function showToast(icon, title, desc, ms) {
-    addNotification(icon, title, desc);
+  function showToast(icon, title, desc, ms, actionLabel, actionHref) {
+    addNotification(icon, title, desc, actionLabel, actionHref);
     const stack = document.getElementById('toastStack');
     if (!stack) return;
     const duration = ms || 8000;
@@ -1498,9 +1607,9 @@ for (let i = 0; i < 100; i++) particles.push({
         if (lastSeen != null) {
           const newOnes = orders.filter(function (o) { return o.timestamp > lastSeen; });
           if (newOnes.length === 1) {
-            showToast('🎉', 'New order!', '+' + newOnes[0].commission.toFixed(2) + ' ' + newOnes[0].currency.toUpperCase() + ' commission earned.');
+            showToast('🎉', 'New order!', '+' + newOnes[0].commission.toFixed(2) + ' ' + newOnes[0].currency.toUpperCase() + ' commission earned.', null, 'View Dashboard', 'index');
           } else if (newOnes.length > 1) {
-            showToast('🎉', newOnes.length + ' new orders', 'Since your last visit.');
+            showToast('🎉', newOnes.length + ' new orders', 'Since your last visit.', null, 'View Dashboard', 'index');
           }
         }
         if (lastSeen == null || newestTs > lastSeen) localStorage.setItem(LAST_ORDER_TS_KEY, String(newestTs));
@@ -1522,9 +1631,9 @@ for (let i = 0; i < 100; i++) particles.push({
         if (prev && prev !== item.status && item.status !== 'pending') {
           if (item.status === 'paid') {
             const paidStr = (item.paidAmount > 0 ? item.paidAmount : item.amount).toFixed(2) + ' ' + item.currency.toUpperCase();
-            showToast('✅', 'Withdrawal paid!', 'You were sent ' + paidStr + '.');
+            showToast('✅', 'Withdrawal paid!', 'You were sent ' + paidStr + '.', null, 'View Balance', 'balance');
           } else if (item.status === 'denied') {
-            showToast('❌', 'Withdrawal denied', 'Request ' + requestId + ' — check Discord for details.');
+            showToast('❌', 'Withdrawal denied', 'Request ' + requestId + ' — check Discord for details.', null, 'View Balance', 'balance');
           }
         }
         statusMap[requestId] = item.status;
@@ -1578,11 +1687,34 @@ for (let i = 0; i < 100; i++) particles.push({
       .catch(() => showError('Network error while contacting the server. Please try again.'));
   }
 
+  let refreshProgressHideTimer = null;
+  function showRefreshProgress() {
+    const bar = document.getElementById('refreshProgress');
+    if (!bar) return;
+    clearTimeout(refreshProgressHideTimer);
+    bar.classList.remove('done');
+    bar.style.transition = 'none';
+    bar.style.transform = 'scaleX(0)';
+    void bar.offsetWidth;
+    bar.style.transition = '';
+    bar.classList.add('active');
+  }
+  function hideRefreshProgress() {
+    const bar = document.getElementById('refreshProgress');
+    if (!bar) return;
+    bar.classList.remove('active');
+    bar.classList.add('done');
+    refreshProgressHideTimer = setTimeout(function () {
+      bar.classList.remove('done');
+      bar.style.opacity = '0';
+    }, 300);
+  }
   function recheckToken(token, isBackground) {
+    showRefreshProgress();
     return fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
       .then(r => r.json())
-      .then(data => { if (!isBackground || (data && data.ok)) handleResponse(data); return data; })
-      .catch(() => { if (!isBackground) showError('Network error while contacting the server. Please try again.'); });
+      .then(data => { hideRefreshProgress(); if (!isBackground || (data && data.ok)) handleResponse(data); return data; })
+      .catch(() => { hideRefreshProgress(); if (!isBackground) showError('Network error while contacting the server. Please try again.'); });
   }
   let refreshTimer = null;
   function startAutoRefresh() {
