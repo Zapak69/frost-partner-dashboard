@@ -33,6 +33,7 @@
     padding: 0 28px; height: 64px;
     backdrop-filter: blur(20px); background: rgba(8,12,16,0.95);
     border: 1px solid var(--border); border-radius: 18px;
+    overflow: hidden;
   }
   @media (min-width: 2000px) {
     nav { max-width: 1600px; height: 72px; }
@@ -378,7 +379,7 @@
 
   #refreshProgress {
     position: absolute; left: 0; right: 0; bottom: 0;
-    height: 2px; overflow: hidden; border-radius: 0 0 18px 18px;
+    height: 2px;
     background: transparent;
     pointer-events: none;
   }
