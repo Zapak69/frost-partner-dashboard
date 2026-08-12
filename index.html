@@ -1741,12 +1741,12 @@ for (let i = 0; i < 100; i++) particles.push({
       }, 300);
     }, 250);
   }
-  function recheckToken(token, isBackground) {
-    showRefreshProgress();
+  function recheckToken(token, isBackground, showProgress) {
+    if (showProgress) showRefreshProgress();
     return fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
       .then(r => r.json())
-      .then(data => { hideRefreshProgress(); if (!isBackground || (data && data.ok)) handleResponse(data); return data; })
-      .catch(() => { hideRefreshProgress(); if (!isBackground) showError('Network error while contacting the server. Please try again.'); });
+      .then(data => { if (showProgress) hideRefreshProgress(); if (!isBackground || (data && data.ok)) handleResponse(data); return data; })
+      .catch(() => { if (showProgress) hideRefreshProgress(); if (!isBackground) showError('Network error while contacting the server. Please try again.'); });
   }
   let refreshTimer = null;
   function startAutoRefresh() {
@@ -1772,7 +1772,7 @@ for (let i = 0; i < 100; i++) particles.push({
     if (!token) return;
     const btn = this;
     btn.classList.add('spinning');
-    recheckToken(token, true).finally(() => btn.classList.remove('spinning'));
+    recheckToken(token, true, true).finally(() => btn.classList.remove('spinning'));
   });
 
   const loginBtn = document.getElementById('loginBtn');
@@ -2032,7 +2032,7 @@ for (let i = 0; i < 100; i++) particles.push({
       show('stateWorking');
     }
     startAutoRefresh();
-    recheckToken(token, false);
+    recheckToken(token, false, true);
   })();
 })();
 </script>

@@ -1086,14 +1086,14 @@ for (let i = 0; i < 100; i++) particles.push({
       }, 300);
     }, 250);
   }
-  function loadAssets(token, retriesLeft, lastVisit, isBackground) {
-    showRefreshProgress();
+  function loadAssets(token, retriesLeft, lastVisit, isBackground, showProgress) {
+    if (showProgress) showRefreshProgress();
     fetch(BRIDGE_URL + '?token=' + encodeURIComponent(token), { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
-        hideRefreshProgress();
+        if (showProgress) hideRefreshProgress();
         if (!data || !data.ok) {
-          if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1, lastVisit, isBackground); return; }
+          if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1, lastVisit, isBackground, showProgress); return; }
           if (data && data.error === 'forbidden') { clearToken(); window.location.href = 'index'; return; }
           if (!isBackground) showError('Could not load your assets. Please try again.');
           return;
@@ -1120,8 +1120,8 @@ for (let i = 0; i < 100; i++) particles.push({
         saveLastVisitNow();
       })
       .catch(() => {
-        hideRefreshProgress();
-        if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1, lastVisit, isBackground); return; }
+        if (showProgress) hideRefreshProgress();
+        if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1, lastVisit, isBackground, showProgress); return; }
         if (!isBackground) showError('Network error while contacting the server. Please try again.');
       });
   }
@@ -1130,7 +1130,7 @@ for (let i = 0; i < 100; i++) particles.push({
     const token = loadToken();
     if (!token) { window.location.href = 'index'; return; }
     show('stateLoading');
-    loadAssets(token, 1, loadLastVisit());
+    loadAssets(token, 1, loadLastVisit(), false, true);
   });
   let sessionLastVisit = null;
   let refreshTimer = null;
@@ -1326,7 +1326,7 @@ for (let i = 0; i < 100; i++) particles.push({
     if (!token) { window.location.href = 'index'; return; }
     show('stateLoading');
     sessionLastVisit = loadLastVisit();
-    loadAssets(token, 1, sessionLastVisit);
+    loadAssets(token, 1, sessionLastVisit, false, true);
     startAutoRefresh();
   })();
 })();

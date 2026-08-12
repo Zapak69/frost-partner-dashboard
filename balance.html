@@ -1371,10 +1371,10 @@ for (let i = 0; i < 100; i++) particles.push({
     } catch (e) {}
   }
 
-  function handleResponse(data, isBackground, token, retriesLeft) {
+  function handleResponse(data, isBackground, token, retriesLeft, showProgress) {
     const failed = !data || !data.ok;
     if (failed && !isBackground && retriesLeft > 0 && token) {
-      recheckToken(token, false, retriesLeft - 1);
+      recheckToken(token, false, retriesLeft - 1, showProgress);
       return;
     }
     if (!data || !data.ok || data.status !== 'eligible') {
@@ -1423,14 +1423,14 @@ for (let i = 0; i < 100; i++) particles.push({
       }, 300);
     }, 250);
   }
-  function recheckToken(token, isBackground, retriesLeft) {
-    showRefreshProgress();
+  function recheckToken(token, isBackground, retriesLeft, showProgress) {
+    if (showProgress) showRefreshProgress();
     return fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
       .then(r => r.json())
-      .then(data => { hideRefreshProgress(); handleResponse(data, isBackground, token, retriesLeft); })
+      .then(data => { if (showProgress) hideRefreshProgress(); handleResponse(data, isBackground, token, retriesLeft, showProgress); })
       .catch(() => {
-        hideRefreshProgress();
-        if (!isBackground && retriesLeft > 0) { recheckToken(token, false, retriesLeft - 1); return; }
+        if (showProgress) hideRefreshProgress();
+        if (!isBackground && retriesLeft > 0) { recheckToken(token, false, retriesLeft - 1, showProgress); return; }
         if (!isBackground) showError('Network error while contacting the server. Please try again.');
       });
   }
@@ -1453,14 +1453,14 @@ for (let i = 0; i < 100; i++) particles.push({
     const token = loadToken();
     if (!token) { window.location.href = 'index'; return; }
     show('stateLoading');
-    recheckToken(token, false, 1);
+    recheckToken(token, false, 1, true);
   });
   document.getElementById('refreshBtn').addEventListener('click', function () {
     const token = loadToken();
     if (!token) return;
     const btn = this;
     btn.classList.add('spinning');
-    recheckToken(token, true, 0).finally(() => btn.classList.remove('spinning'));
+    recheckToken(token, true, 0, true).finally(() => btn.classList.remove('spinning'));
   });
   const withdrawStates = ['withdrawStateForm', 'withdrawStateSubmitting', 'withdrawStateDone'];
   function showWithdrawState(id) {
@@ -1766,10 +1766,10 @@ for (let i = 0; i < 100; i++) particles.push({
     if (cached && cached.status === 'eligible' && cached.walletSummary) {
       show('stateData');
       renderWallet(cached);
-      recheckToken(token, true);
+      recheckToken(token, true, 0, true);
     } else {
       show('stateLoading');
-      recheckToken(token, false, 1);
+      recheckToken(token, false, 1, true);
     }
     startAutoRefresh();
   })();
