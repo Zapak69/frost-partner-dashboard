@@ -14,7 +14,7 @@
     --frost-blue: #4fc8f8; --frost-deep: #1a7fc4; --frost-glow: #00c8ff;
     --amber: #ffca28; --amber-deep: #ffa726;
     --text: #e8f4fc; --muted: #6b8fa8; --border: rgba(79,200,248,0.15);
-    --red: #ff5c5c;
+    --red: #ff5c5c; --green: #3dff72;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
@@ -295,12 +295,13 @@
   @media (prefers-reduced-motion: reduce) { .toast-progress { animation: none; } }
 
   .notif-bell-btn {
-    position: relative; display: inline-flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    position: relative; display: none; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
     background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
     cursor: pointer; transition: color 0.2s, border-color 0.2s, background 0.2s;
   }
   .notif-bell-btn:hover { color: var(--frost-blue); border-color: rgba(79,200,248,0.4); }
+  .notif-bell-btn.active { color: var(--frost-blue); border-color: rgba(79,200,248,0.5); background: rgba(79,200,248,0.12); }
   .notif-bell-btn svg { width: 17px; height: 17px; }
   .notif-badge {
     position: absolute; top: -5px; right: -5px;
@@ -311,15 +312,16 @@
     box-shadow: 0 0 0 2px var(--bg);
   }
   .notif-panel {
-    position: fixed; bottom: 20px; left: 20px; z-index: 600;
-    width: min(360px, calc(100vw - 40px)); max-height: min(480px, calc(100vh - 100px));
+    position: fixed; top: 84px; right: 16px; z-index: 600;
+    width: min(360px, calc(100vw - 32px)); max-height: min(480px, calc(100vh - 110px));
     background: linear-gradient(165deg, rgba(23,26,31,0.98), rgba(16,17,19,0.98));
     border: 1px solid var(--border); border-radius: 16px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     display: none; flex-direction: column; overflow: hidden;
+    transform-origin: top right;
   }
-  .notif-panel.open { display: flex; animation: notifPanelIn 0.22s cubic-bezier(0.22,1,0.36,1) both; }
-  @keyframes notifPanelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .notif-panel.open { display: flex; animation: notifPanelIn 0.25s cubic-bezier(0.22,1,0.36,1) both; }
+  @keyframes notifPanelIn { from { opacity: 0; transform: scale(0.85) translateY(-6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
   @media (prefers-reduced-motion: reduce) { .notif-panel.open { animation: none; } }
   .notif-panel-head {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -363,6 +365,13 @@
   .chart-axis-label { fill: var(--muted); font-size: 11px; font-family: 'Space Mono', monospace; }
   .chart-version-label { fill: var(--text); font-size: 12px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; }
   .chart-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13.5px; }
+  .view-all-btn {
+    display: block; width: 100%; margin-top: 10px; padding: 10px; border-radius: 9px;
+    background: none; border: 1px dashed var(--border); color: var(--frost-blue);
+    font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .view-all-btn:hover { background: rgba(79,200,248,0.08); border-color: rgba(79,200,248,0.4); }
   .chart-loading { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13.5px; }
 
   .range-switch { display: flex; gap: 4px; background: rgba(8,12,16,0.6); border: 1px solid var(--border); border-radius: 10px; padding: 4px; flex-wrap: wrap; }
@@ -452,7 +461,121 @@
     border-top: 1px solid var(--border); padding-top: 28px;
     font-size: 13px; color: var(--muted);
   }
-  .footer-bottom-right { display: flex; align-items: center; gap: 16px; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 700;
+    background: rgba(4,6,9,0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; animation: modalOverlayIn 0.2s ease both; }
+  @keyframes modalOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-box {
+    position: relative; width: min(440px, 100%); max-height: min(600px, calc(100vh - 40px)); overflow-y: auto;
+    background: linear-gradient(180deg, rgba(17,29,43,0.98), rgba(10,16,24,0.98));
+    border: 1px solid var(--border); border-radius: 20px; padding: 32px 28px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    animation: modalBoxIn 0.25s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  @keyframes modalBoxIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .modal-overlay.open, .modal-box { animation: none; } }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 30px; height: 30px; border-radius: 8px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--muted);
+    cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .modal-close:hover { color: var(--text); border-color: rgba(255,92,92,0.4); }
+  .modal-title { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-right: 30px; }
+  .qw-state { display: none; }
+  .qw-state.active { display: block; animation: fadeInUp 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+  @media (prefers-reduced-motion: reduce) { .qw-state.active { animation: none; } }
+
+  .withdraw-step { display: none; }
+  .withdraw-step.active { display: block; animation: fadeInUp 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+  @media (prefers-reduced-motion: reduce) { .withdraw-step.active { animation: none; } }
+  .withdraw-back-btn {
+    display: inline-flex; align-items: center; gap: 4px; background: none; border: none; cursor: pointer;
+    color: var(--muted); font-family: 'Space Grotesk', sans-serif; font-size: 12.5px; font-weight: 600;
+    margin-bottom: 18px; padding: 0; transition: color 0.2s, transform 0.2s;
+  }
+  .withdraw-back-btn:hover { color: var(--frost-blue); transform: translateX(-2px); }
+  .withdraw-title { font-family: 'Space Mono', monospace; font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .withdraw-sub { font-size: 13.5px; color: var(--muted); margin-bottom: 22px; }
+  .withdraw-sub strong { color: var(--amber); font-family: 'Space Mono', monospace; }
+  .withdraw-field { margin-bottom: 16px; }
+  .withdraw-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
+  .withdraw-amount-row { display: flex; gap: 8px; }
+  .withdraw-input {
+    width: 100%; background: rgba(8,12,16,0.6); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 14px; font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: var(--text);
+    outline: none; transition: border-color 0.2s, background 0.2s;
+  }
+  .withdraw-input::placeholder { color: var(--muted); }
+  .withdraw-input:focus { border-color: var(--frost-blue); background: rgba(8,12,16,0.85); }
+  .withdraw-input-wrap { position: relative; flex: 1; min-width: 0; }
+  .withdraw-input-wrap .withdraw-input { padding-right: 32px; }
+  .withdraw-input.has-stepper::-webkit-inner-spin-button,
+  .withdraw-input.has-stepper::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
+  .withdraw-input.has-stepper { -moz-appearance: textfield; appearance: textfield; }
+  .withdraw-stepper {
+    position: absolute; top: 1px; right: 1px; bottom: 1px; width: 27px;
+    display: flex; flex-direction: column;
+    border-left: 1px solid var(--border); border-radius: 0 9px 9px 0; overflow: hidden;
+  }
+  .withdraw-stepper-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.02); border: none; color: var(--muted);
+    cursor: pointer; padding: 0; line-height: 1;
+    transition: background 0.15s, color 0.15s;
+  }
+  .withdraw-stepper-btn svg { width: 9px; height: 9px; display: block; }
+  .withdraw-stepper-btn:first-child { border-bottom: 1px solid var(--border); }
+  .withdraw-stepper-btn:hover { background: rgba(255,202,40,0.14); color: var(--amber); }
+  .withdraw-stepper-btn:active { background: rgba(255,202,40,0.22); }
+  .withdraw-max-btn {
+    flex-shrink: 0; background: rgba(255,202,40,0.12); border: 1px solid rgba(255,202,40,0.4); color: var(--amber);
+    font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; border-radius: 10px;
+    padding: 0 16px; cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  }
+  .withdraw-max-btn:hover { background: rgba(255,202,40,0.2); }
+  .withdraw-checkbox-row { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+  .withdraw-checkbox-row input { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--frost-blue); cursor: pointer; flex-shrink: 0; }
+  .withdraw-error { font-size: 12.5px; color: var(--red); margin: -4px 0 16px; }
+  .withdraw-btn {
+    width: 100%; padding: 13px; border: none; border-radius: 10px; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; font-size: 14.5px; font-weight: 700;
+    background: linear-gradient(135deg, var(--amber), var(--amber-deep)); color: #1a0f00;
+    transition: transform 0.2s, box-shadow 0.25s, opacity 0.2s;
+  }
+  .withdraw-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,202,40,0.3); }
+  .withdraw-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .withdraw-done-check { display: flex; justify-content: center; margin-bottom: 18px; }
+  .withdraw-done-check svg { width: 68px; height: 68px; overflow: visible; }
+  .withdraw-done-check circle {
+    fill: none; stroke: var(--green); stroke-width: 3; stroke-linecap: round;
+    stroke-dasharray: 166; stroke-dashoffset: 166;
+    animation: checkCircle 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  .withdraw-done-check path {
+    fill: none; stroke: var(--green); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 48; stroke-dashoffset: 48;
+    animation: checkMark 0.35s cubic-bezier(0.22,1,0.36,1) 0.45s forwards;
+  }
+  .withdraw-done-check .check-glow {
+    stroke: none; fill: var(--green); opacity: 0;
+    animation: checkGlow 0.6s ease-out 0.5s forwards;
+  }
+  @keyframes checkCircle { to { stroke-dashoffset: 0; } }
+  @keyframes checkMark { to { stroke-dashoffset: 0; } }
+  @keyframes checkGlow { 0% { opacity: 0.35; r: 2; } 100% { opacity: 0; r: 34; } }
+  @media (prefers-reduced-motion: reduce) {
+    .withdraw-done-check circle, .withdraw-done-check path { animation: none; stroke-dashoffset: 0; }
+    .withdraw-done-check .check-glow { animation: none; opacity: 0; }
+  }
+  .withdraw-title.centered { text-align: center; }
+  .withdraw-sub.centered { text-align: center; }
 </style>
 </head>
 <body>
@@ -480,12 +603,19 @@
   <a class="nav-logo" href="https://partner.frostclient.eu"><img src="favicon.ico" alt="" class="nav-logo-icon" id="navLogoIcon"/><span id="navLogoText">FROST</span></a>
   <div class="nav-links" id="navLinks">
     <a class="nav-link active" href="https://partner.frostclient.eu">Dashboard</a>
-    <a class="nav-link" href="https://partner.frostclient.eu/withdraw">Withdraw</a>
+    <a class="nav-link" href="https://partner.frostclient.eu/withdraw">Balance</a>
     <a class="nav-link" href="https://partner.frostclient.eu/assets">Assets</a>
   </div>
   <div class="nav-right">
     <a class="nav-back" href="https://frostclient.eu">← Back to Frost</a>
-    <button type="button" class="withdraw-open-btn" id="withdrawOpenBtn">Withdraw</button>
+    <button type="button" class="notif-bell-btn" id="notifBellBtn" aria-label="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="notif-badge" id="notifBadge"></span>
+    </button>
+    <button type="button" class="withdraw-open-btn" id="withdrawOpenBtn">Quick Withdraw</button>
     <button type="button" class="nav-logout-btn" id="navLogoutBtn">Log out</button>
   </div>
 </nav>
@@ -666,6 +796,7 @@
       <div class="chart-card">
         <div class="history-list" id="paymentHistoryList"></div>
         <div class="chart-empty" id="paymentHistoryEmpty" style="display:none;">No orders yet.</div>
+        <button type="button" class="view-all-btn" id="paymentHistoryViewAll" style="display:none;"></button>
       </div>
     </div>
   </div>
@@ -696,7 +827,7 @@
     <div class="footer-col">
       <h4>Partner</h4>
       <a href="https://partner.frostclient.eu">Dashboard</a>
-      <a href="https://partner.frostclient.eu/withdraw">Withdraw</a>
+      <a href="https://partner.frostclient.eu/withdraw">Balance</a>
       <a href="https://partner.frostclient.eu/assets">Assets</a>
     </div>
     <div class="footer-col">
@@ -719,16 +850,7 @@
     <span>© Frost 2026. All rights reserved.<br>
       Made by: Zipp
     </span>
-    <div class="footer-bottom-right">
-      <span>Not affiliated with Minecraft or Mojang.</span>
-      <button type="button" class="notif-bell-btn" id="notifBellBtn" aria-label="Notifications">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        <span class="notif-badge" id="notifBadge"></span>
-      </button>
-    </div>
+    <span>Not affiliated with Minecraft or Mojang.</span>
   </div>
 </footer>
 
@@ -741,6 +863,79 @@
     </div>
   </div>
   <div class="notif-panel-list" id="notifPanelList"></div>
+</div>
+
+<div class="modal-overlay" id="qwOverlay">
+  <div class="modal-box" id="qwModal">
+    <button type="button" class="modal-close" id="qwCloseBtn" aria-label="Close">✕</button>
+
+    <div class="qw-state active" id="qwStateForm">
+      <div class="modal-title">Quick Withdraw</div>
+      <p class="withdraw-sub">Available to withdraw: <strong id="qwAvailableText">—</strong></p>
+
+      <div class="withdraw-step active" id="qwStepAmount">
+        <div class="withdraw-field">
+          <label>Amount</label>
+          <div class="withdraw-amount-row">
+            <div class="withdraw-input-wrap">
+              <input type="number" class="withdraw-input has-stepper" id="qwAmount" placeholder="0.00" min="0" step="0.01"/>
+              <div class="withdraw-stepper">
+                <button type="button" class="withdraw-stepper-btn" id="qwStepUp" tabindex="-1" aria-label="Increase amount">
+                  <svg viewBox="0 0 10 6" fill="none"><path d="M1 5L5 1L9 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" class="withdraw-stepper-btn" id="qwStepDown" tabindex="-1" aria-label="Decrease amount">
+                  <svg viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+            <button type="button" class="withdraw-max-btn" id="qwMaxBtn">Max</button>
+          </div>
+        </div>
+        <p class="withdraw-error" id="qwAmountError" style="display:none;"></p>
+        <button type="button" class="withdraw-btn" id="qwContinueBtn" disabled>Continue</button>
+      </div>
+
+      <div class="withdraw-step" id="qwStepDetails">
+        <button type="button" class="withdraw-back-btn" id="qwBackBtn">← Change amount</button>
+        <div class="withdraw-field">
+          <label>PayPal email</label>
+          <input type="email" class="withdraw-input" id="qwEmail1" placeholder="you@example.com" autocomplete="off"/>
+        </div>
+        <div class="withdraw-field">
+          <label>Confirm PayPal email</label>
+          <input type="email" class="withdraw-input" id="qwEmail2" placeholder="you@example.com" autocomplete="off"/>
+        </div>
+        <label class="withdraw-checkbox-row">
+          <input type="checkbox" id="qwConfirmAmount"/>
+          <span>I understand the final paid amount may differ slightly from the estimate shown.</span>
+        </label>
+        <label class="withdraw-checkbox-row">
+          <input type="checkbox" id="qwConfirmEmail"/>
+          <span>I confirm my PayPal email above is correct.</span>
+        </label>
+        <p class="withdraw-error" id="qwFormError" style="display:none;"></p>
+        <button type="button" class="withdraw-btn" id="qwSubmitBtn" disabled>Submit Request</button>
+      </div>
+    </div>
+
+    <div class="qw-state" id="qwStateSubmitting">
+      <div class="spinner"></div>
+      <p class="withdraw-sub" style="text-align:center;margin-bottom:0;">Submitting your request…</p>
+    </div>
+
+    <div class="qw-state" id="qwStateDone">
+      <div class="withdraw-done-check">
+        <svg viewBox="0 0 64 64" fill="none">
+          <circle class="check-glow" cx="32" cy="32" r="2"/>
+          <circle cx="32" cy="32" r="26"/>
+          <path d="M20 33 L28 41 L45 23"/>
+        </svg>
+      </div>
+      <div class="withdraw-title centered">Request sent 🎉</div>
+      <p class="withdraw-sub centered" style="margin-bottom:16px;">We'll process your withdrawal and reach out on Discord if we need anything else.</p>
+      <button type="button" class="withdraw-btn" id="qwDoneBtn">Done</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -794,6 +989,7 @@ for (let i = 0; i < 100; i++) particles.push({
     const isPartner = id === 'stateData';
     document.getElementById('navLogoutBtn').style.display = loggedIn ? 'inline-block' : 'none';
     document.getElementById('withdrawOpenBtn').style.display = isPartner ? 'inline-flex' : 'none';
+    document.getElementById('notifBellBtn').style.display = isPartner ? 'inline-flex' : 'none';
     document.getElementById('navLinks').style.display = isPartner ? 'flex' : 'none';
     document.getElementById('navLogoText').textContent = isPartner ? 'PARTNER DASHBOARD' : 'FROST';
     document.getElementById('navLogoIcon').src = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
@@ -1109,16 +1305,27 @@ for (let i = 0; i < 100; i++) particles.push({
     updateLastUpdatedText();
   }
 
+  const HISTORY_PAGE_SIZE = 6;
+  let paymentHistoryExpanded = false;
   function renderPaymentHistory(data) {
     const listEl = document.getElementById('paymentHistoryList');
     const emptyEl = document.getElementById('paymentHistoryEmpty');
-    const items = data.orderHistory || [];
+    const viewAllBtn = document.getElementById('paymentHistoryViewAll');
+    const allItems = data.orderHistory || [];
     listEl.innerHTML = '';
-    if (!items.length) {
+    if (!allItems.length) {
       emptyEl.style.display = '';
+      viewAllBtn.style.display = 'none';
       return;
     }
     emptyEl.style.display = 'none';
+    const items = paymentHistoryExpanded ? allItems : allItems.slice(0, HISTORY_PAGE_SIZE);
+    if (allItems.length > HISTORY_PAGE_SIZE) {
+      viewAllBtn.style.display = '';
+      viewAllBtn.textContent = paymentHistoryExpanded ? 'Show less' : 'View all (' + allItems.length + ')';
+    } else {
+      viewAllBtn.style.display = 'none';
+    }
     items.forEach(function (item) {
       const row = document.createElement('div');
       row.className = 'history-row';
@@ -1212,6 +1419,7 @@ for (let i = 0; i < 100; i++) particles.push({
   function toggleNotifPanel() {
     notifPanelOpen = !notifPanelOpen;
     document.getElementById('notifPanel').classList.toggle('open', notifPanelOpen);
+    document.getElementById('notifBellBtn').classList.toggle('active', notifPanelOpen);
     if (notifPanelOpen) renderNotifPanel();
   }
   const notifBellBtn = document.getElementById('notifBellBtn');
@@ -1234,6 +1442,7 @@ for (let i = 0; i < 100; i++) particles.push({
       if (notifPanelOpen && !panel.contains(e.target) && e.target !== notifBellBtn && !notifBellBtn.contains(e.target)) {
         notifPanelOpen = false;
         panel.classList.remove('open');
+        notifBellBtn.classList.remove('active');
       }
     });
     updateNotifBadge();
@@ -1295,20 +1504,28 @@ for (let i = 0; i < 100; i++) particles.push({
         if (lastSeen == null || newestTs > lastSeen) localStorage.setItem(LAST_ORDER_TS_KEY, String(newestTs));
       }
       const history = data.withdrawHistory || [];
-      let statusMap = {};
-      try { statusMap = JSON.parse(localStorage.getItem(WITHDRAW_STATUS_KEY) || '{}'); } catch (e2) {}
+      const dedupedByRequestId = {};
       history.forEach(function (item) {
         if (!item.requestId) return;
-        const prev = statusMap[item.requestId];
+        const existing = dedupedByRequestId[item.requestId];
+        if (!existing || (existing.status === 'pending' && item.status !== 'pending')) {
+          dedupedByRequestId[item.requestId] = item;
+        }
+      });
+      let statusMap = {};
+      try { statusMap = JSON.parse(localStorage.getItem(WITHDRAW_STATUS_KEY) || '{}'); } catch (e2) {}
+      Object.keys(dedupedByRequestId).forEach(function (requestId) {
+        const item = dedupedByRequestId[requestId];
+        const prev = statusMap[requestId];
         if (prev && prev !== item.status && item.status !== 'pending') {
           if (item.status === 'paid') {
             const paidStr = (item.paidAmount > 0 ? item.paidAmount : item.amount).toFixed(2) + ' ' + item.currency.toUpperCase();
             showToast('✅', 'Withdrawal paid!', 'You were sent ' + paidStr + '.');
           } else if (item.status === 'denied') {
-            showToast('❌', 'Withdrawal denied', 'Request ' + item.requestId + ' — check Discord for details.');
+            showToast('❌', 'Withdrawal denied', 'Request ' + requestId + ' — check Discord for details.');
           }
         }
-        statusMap[item.requestId] = item.status;
+        statusMap[requestId] = item.status;
       });
       localStorage.setItem(WITHDRAW_STATUS_KEY, JSON.stringify(statusMap));
     } catch (e) {}
@@ -1422,6 +1639,10 @@ for (let i = 0; i < 100; i++) particles.push({
     show('stateLogin');
   });
 
+  document.getElementById('paymentHistoryViewAll').addEventListener('click', function () {
+    paymentHistoryExpanded = !paymentHistoryExpanded;
+    if (lastData) renderPaymentHistory(lastData);
+  });
   document.getElementById('copyCodeBtn').addEventListener('click', function () {
     const code = document.getElementById('partnerCode').textContent;
     if (!code || code === '—') return;
@@ -1436,9 +1657,153 @@ for (let i = 0; i < 100; i++) particles.push({
       navigator.clipboard.writeText(code).then(done).catch(() => {});
     }
   });
+  const QW_DEFAULT_MIN = 4;
+  function qwAvailable() {
+    return (lastData && lastData.walletSummary && lastData.walletSummary.available) || { amount: 0, currency: 'eur' };
+  }
+  function qwMinWithdraw() {
+    return (lastData && lastData.minWithdraw) || QW_DEFAULT_MIN;
+  }
+  function qwShowState(id) {
+    ['qwStateForm', 'qwStateSubmitting', 'qwStateDone'].forEach(function (s) { document.getElementById(s).classList.toggle('active', s === id); });
+  }
+  function qwShowStep(id) {
+    ['qwStepAmount', 'qwStepDetails'].forEach(function (s) { document.getElementById(s).classList.toggle('active', s === id); });
+  }
+  function qwResetForm() {
+    document.getElementById('qwAmount').value = '';
+    document.getElementById('qwEmail1').value = '';
+    document.getElementById('qwEmail2').value = '';
+    document.getElementById('qwConfirmAmount').checked = false;
+    document.getElementById('qwConfirmEmail').checked = false;
+    document.getElementById('qwAmountError').style.display = 'none';
+    document.getElementById('qwFormError').style.display = 'none';
+    qwShowState('qwStateForm');
+    qwShowStep('qwStepAmount');
+    qwUpdateContinueEnabled();
+    qwUpdateSubmitEnabled();
+  }
+  function qwUpdateContinueEnabled() {
+    const amount = parseFloat(document.getElementById('qwAmount').value);
+    const bal = qwAvailable();
+    const min = qwMinWithdraw();
+    const errEl = document.getElementById('qwAmountError');
+    let error = '';
+    if (amount && amount > bal.amount + 0.001) error = 'Amount exceeds what you have available.';
+    else if (amount && amount < min) error = 'Minimum withdrawal is ' + min.toFixed(2) + ' ' + bal.currency.toUpperCase() + '.';
+    errEl.textContent = error;
+    errEl.style.display = error ? 'block' : 'none';
+    const valid = amount >= min && amount <= bal.amount + 0.001;
+    document.getElementById('qwContinueBtn').disabled = !valid;
+  }
+  function qwUpdateSubmitEnabled() {
+    const email1 = document.getElementById('qwEmail1').value.trim();
+    const email2 = document.getElementById('qwEmail2').value.trim();
+    const errEl = document.getElementById('qwFormError');
+    let error = '';
+    if (email1 && email2 && email1.toLowerCase() !== email2.toLowerCase()) error = 'Emails do not match.';
+    errEl.textContent = error;
+    errEl.style.display = error ? 'block' : 'none';
+    const emailOk = !!email1 && email1.toLowerCase() === email2.toLowerCase() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email1);
+    const valid = emailOk && document.getElementById('qwConfirmAmount').checked && document.getElementById('qwConfirmEmail').checked;
+    document.getElementById('qwSubmitBtn').disabled = !valid;
+  }
+  document.getElementById('qwAmount').addEventListener('input', qwUpdateContinueEnabled);
+  ['qwEmail1', 'qwEmail2'].forEach(function (id) { document.getElementById(id).addEventListener('input', qwUpdateSubmitEnabled); });
+  ['qwConfirmAmount', 'qwConfirmEmail'].forEach(function (id) { document.getElementById(id).addEventListener('change', qwUpdateSubmitEnabled); });
+  document.getElementById('qwMaxBtn').addEventListener('click', function () {
+    document.getElementById('qwAmount').value = qwAvailable().amount.toFixed(2);
+    qwUpdateContinueEnabled();
+  });
+  function qwStep(delta) {
+    const input = document.getElementById('qwAmount');
+    const current = parseFloat(input.value) || 0;
+    const max = qwAvailable().amount;
+    const next = Math.min(max, Math.max(0, Math.round((current + delta) * 100) / 100));
+    input.value = next.toFixed(2);
+    qwUpdateContinueEnabled();
+  }
+  document.getElementById('qwStepUp').addEventListener('click', function () { qwStep(0.01); });
+  document.getElementById('qwStepDown').addEventListener('click', function () { qwStep(-0.01); });
+  document.getElementById('qwContinueBtn').addEventListener('click', function () {
+    if (this.disabled) return;
+    qwShowStep('qwStepDetails');
+  });
+  document.getElementById('qwBackBtn').addEventListener('click', function () { qwShowStep('qwStepAmount'); });
+
+  function openQwModal() {
+    const avail = qwAvailable();
+    document.getElementById('qwAvailableText').textContent = avail.amount.toFixed(2) + ' ' + avail.currency.toUpperCase();
+    qwResetForm();
+    document.getElementById('qwOverlay').classList.add('open');
+  }
+  function closeQwModal() {
+    document.getElementById('qwOverlay').classList.remove('open');
+  }
+  document.getElementById('qwDoneBtn').addEventListener('click', closeQwModal);
+  document.getElementById('qwCloseBtn').addEventListener('click', closeQwModal);
+  document.getElementById('qwOverlay').addEventListener('click', function (e) {
+    if (e.target === this) closeQwModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && document.getElementById('qwOverlay').classList.contains('open')) closeQwModal();
+  });
+
+  document.getElementById('qwSubmitBtn').addEventListener('click', function () {
+    if (this.disabled) return;
+    const token = loadToken();
+    if (!token) { closeQwModal(); return; }
+    const amount = parseFloat(document.getElementById('qwAmount').value);
+    const email = document.getElementById('qwEmail1').value.trim();
+    qwShowState('qwStateSubmitting');
+    fetch(LITE_API_URL + '?action=partnerWithdraw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        partnerDashToken: token, amount: amount, paypalEmail: email,
+        confirmedAmount: true, confirmedEmail: true
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.ok) {
+          qwShowState('qwStateDone');
+          if (lastData && lastData.walletSummary && lastData.walletSummary.available) {
+            lastData.walletSummary.available.amount = Math.max(0, Math.round((lastData.walletSummary.available.amount - amount) * 100) / 100);
+            const quickAvailEl = document.getElementById('quickAvailable');
+            if (quickAvailEl) quickAvailEl.textContent = lastData.walletSummary.available.amount.toFixed(2) + ' ' + lastData.walletSummary.available.currency.toUpperCase();
+          }
+          const t = loadToken();
+          if (t) recheckToken(t, true);
+          return;
+        }
+        qwShowState('qwStateForm');
+        qwShowStep('qwStepDetails');
+        const errEl = document.getElementById('qwFormError');
+        errEl.style.display = 'block';
+        if (data && data.error === 'exceeds_available') {
+          errEl.textContent = 'That exceeds what you have available (' + Number(data.available || 0).toFixed(2) + ' ' + String(data.currency || '').toUpperCase() + ').';
+        } else if (data && data.error === 'below_minimum') {
+          errEl.textContent = 'Minimum withdrawal is ' + Number(data.minimum || QW_DEFAULT_MIN).toFixed(2) + '.';
+        } else if (data && data.error === 'token_expired') {
+          clearToken();
+          closeQwModal();
+          show('stateLogin');
+        } else {
+          errEl.textContent = "Couldn't submit your request. Please try again.";
+        }
+      })
+      .catch(() => {
+        qwShowState('qwStateForm');
+        qwShowStep('qwStepDetails');
+        const errEl = document.getElementById('qwFormError');
+        errEl.style.display = 'block';
+        errEl.textContent = 'Network error. Please try again.';
+      });
+  });
 
   document.getElementById('withdrawOpenBtn').addEventListener('click', () => {
-    window.location.href = 'withdraw';
+    openQwModal();
   });
 
   (function init() {
