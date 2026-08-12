@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Assets | Frost Partner Dashboard</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico" id="favicon">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080c10; --surface: #111d2b; --surface2: #162233;
+    --frost-blue: #4fc8f8; --frost-deep: #1a7fc4; --frost-glow: #00c8ff;
+    --amber: #ffca28; --amber-deep: #ffa726;
+    --text: #e8f4fc; --muted: #6b8fa8; --border: rgba(79,200,248,0.15);
+    --red: #ff5c5c; --green: #3dff72;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; min-height: 100vh; }
+  .topo-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .topo-bg svg { width: 100%; height: 100%; opacity: 0.07; }
+  #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 68px;
+    backdrop-filter: blur(20px); background: rgba(8,12,16,0.9);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700;
+    letter-spacing: -0.5px; color: var(--frost-blue);
+    text-shadow: 0 0 20px rgba(79,200,248,0.5); text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .nav-logo:hover { opacity: 0.85; }
+  .nav-logo-icon { width: 22px; height: 22px; filter: drop-shadow(0 0 6px rgba(79,200,248,0.5)); transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); }
+  .nav-logo:hover .nav-logo-icon { transform: rotate(-8deg) scale(1.08); }
+  .nav-logo span { color: var(--text); }
+  .nav-back { color: var(--muted); font-size: 14px; text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--text); }
+  .nav-link { color: var(--muted); font-size: 14px; font-weight: 600; text-decoration: none; transition: color 0.2s; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--frost-blue); }
+  .nav-links { display: none; align-items: center; gap: 18px; }
+  @media (max-width: 480px) {
+    nav { padding: 0 16px; }
+    .nav-back { font-size: 12px; }
+    .nav-link { font-size: 12px; }
+    .nav-links { gap: 12px; }
+  }
+
+  .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 140px 24px 100px; }
+
+  .gate { max-width: 460px; margin: 60px auto 0; text-align: center; }
+  .gate h1 {
+    font-family: 'Space Mono', monospace; font-size: clamp(26px, 4.5vw, 36px);
+    font-weight: 700; letter-spacing: -1px; margin-bottom: 14px;
+  }
+  .gate p { font-size: 14.5px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+  .gate p.state-hint {
+    font-size: 12.5px; opacity: 0; margin-top: 4px; margin-bottom: 0;
+    animation: fadeInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) 3s both;
+  }
+  @media (prefers-reduced-motion: reduce) { .gate p.state-hint { animation: none; opacity: 0.75; } }
+
+  .spinner {
+    width: 30px; height: 30px; margin: 0 auto 20px;
+    border: 3px solid rgba(79,200,248,0.2); border-top-color: var(--frost-blue);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .btn-discord {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    background: #5865F2; color: #fff; text-decoration: none; border: none; cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600;
+    padding: 14px 28px; border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.25s;
+  }
+  .btn-discord:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(88,101,242,0.4); }
+
+  .state { display: none; }
+  .state.active { display: block; animation: fadeInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) { .state.active { animation: none; } }
+
+  .page-head { margin-bottom: 32px; }
+  .page-head h1 { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-head p { font-size: 13.5px; color: var(--muted); }
+
+  .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+  .asset-card {
+    background: linear-gradient(180deg, rgba(17,29,43,0.92), rgba(12,20,30,0.92));
+    border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+    display: flex; flex-direction: column;
+    transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), border-color 0.25s, box-shadow 0.25s;
+  }
+  .asset-card:hover { transform: translateY(-3px); border-color: rgba(79,200,248,0.3); box-shadow: 0 10px 26px rgba(0,0,0,0.25); }
+  .asset-preview {
+    width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: rgba(8,12,16,0.6);
+    border-bottom: 1px solid var(--border); display: block;
+  }
+  .asset-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .asset-name { font-size: 13.5px; font-weight: 600; word-break: break-all; }
+  .asset-meta { font-size: 11.5px; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .asset-download {
+    margin-top: auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    background: rgba(79,200,248,0.1); border: 1px solid var(--border); color: var(--frost-blue);
+    font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700;
+    padding: 9px; border-radius: 9px; text-decoration: none; cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .asset-download:hover { background: rgba(79,200,248,0.18); border-color: rgba(79,200,248,0.4); }
+
+  .empty-note { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14.5px; }
+
+  @media (max-width: 600px) {
+    .page-head { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="topo-bg">
+  <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs><style>.tline{fill:none;stroke:#4fc8f8;stroke-width:1.2;}</style></defs>
+    <path class="tline" d="M-100,200 C100,180 250,240 400,200 S650,140 800,200 S1050,280 1200,220 S1400,160 1500,200"/>
+    <path class="tline" d="M-100,270 C80,250 200,310 380,270 S600,190 760,265 S1000,340 1180,285 S1380,225 1500,265"/>
+    <path class="tline" d="M-100,340 C60,320 180,380 360,340 S580,255 740,330 S980,400 1160,345 S1360,290 1500,335"/>
+    <path class="tline" d="M-100,420 C40,400 160,460 340,420 S560,330 720,410 S960,470 1140,415 S1340,365 1500,415"/>
+    <path class="tline" d="M-100,500 C20,480 140,540 320,500 S540,405 700,490 S940,545 1120,490 S1320,440 1500,490"/>
+    <path class="tline" d="M-100,580 C0,558 120,618 300,580 S520,480 680,565 S920,625 1100,570 S1300,518 1500,568"/>
+    <path class="tline" d="M-100,660 C-20,640 100,700 280,660 S500,560 660,645 S900,705 1080,650 S1280,598 1500,648"/>
+    <path class="tline" d="M-100,740 C-40,720 80,780 260,740 S480,640 640,725 S880,785 1060,730 S1260,678 1500,728"/>
+    <path class="tline" d="M200,100 C300,80 380,150 450,100 S600,40 700,110 S820,180 940,120 S1100,60 1200,100"/>
+    <path class="tline" d="M150,160 C260,140 340,210 420,160 S570,95 670,165 S800,235 920,175 S1060,115 1160,160"/>
+    <path class="tline" d="M250,820 C350,800 430,870 500,820 S650,755 750,825 S870,895 990,835 S1150,775 1250,820"/>
+  </svg>
+</div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <a class="nav-logo" href="https://partner.frostclient.eu"><img src="favicon.ico" alt="" class="nav-logo-icon" id="navLogoIcon"/><span id="navLogoText">Frost</span></a>
+  <div class="nav-links" id="navLinks">
+    <a class="nav-link" href="https://partner.frostclient.eu">Dashboard</a>
+    <a class="nav-link" href="https://partner.frostclient.eu/withdraw">Withdraw</a>
+    <a class="nav-link active" href="https://partner.frostclient.eu/assets">Assets</a>
+  </div>
+  <div class="nav-right">
+    <a class="nav-back" href="index">← Back to Dashboard</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div id="stateLoading" class="state active">
+    <div class="gate">
+      <div class="spinner"></div>
+      <p class="state-hint" id="loadingHint">This can take a few seconds on a first visit.</p>
+    </div>
+  </div>
+
+  <div id="stateError" class="state">
+    <div class="gate">
+      <h1>Something went wrong</h1>
+      <p id="errorText">Please try again.</p>
+      <button type="button" class="btn-discord" id="retryBtn" style="background:rgba(255,255,255,0.06);">Retry</button>
+    </div>
+  </div>
+
+  <div id="stateData" class="state">
+    <div class="page-head">
+      <h1>Assets</h1>
+      <p>Banners and other assets we've made for you - preview and download below.</p>
+    </div>
+
+    <div class="asset-grid" id="assetGrid"></div>
+    <div class="empty-note" id="assetEmpty" style="display:none;">No assets yet - reach out to us on Discord if you're expecting one.</div>
+  </div>
+
+</div>
+
+<script>
+const particleCanvas = document.getElementById('particles');
+const particleCtx = particleCanvas.getContext('2d');
+let particleW, particleH, particles = [];
+function resizeParticleCanvas() {
+  particleW = particleCanvas.width = window.innerWidth;
+  particleH = particleCanvas.height = window.innerHeight;
+}
+resizeParticleCanvas();
+window.addEventListener('resize', resizeParticleCanvas);
+for (let i = 0; i < 100; i++) particles.push({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  r: Math.random() * 1.5 + 0.5,
+  speed: Math.random() * 0.4 + 0.1,
+  drift: (Math.random() - 0.5) * 0.3,
+  opacity: Math.random() * 0.4 + 0.1
+});
+(function animateParticles() {
+  particleCtx.clearRect(0, 0, particleW, particleH);
+  for (const p of particles) {
+    particleCtx.beginPath();
+    particleCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    particleCtx.fillStyle = `rgba(168,230,248,${p.opacity})`;
+    particleCtx.fill();
+    p.y += p.speed; p.x += p.drift;
+    if (p.y > particleH + 10) { p.y = -10; p.x = Math.random() * particleW; }
+    if (p.x > particleW + 10) p.x = -10;
+    if (p.x < -10) p.x = particleW + 10;
+  }
+  requestAnimationFrame(animateParticles);
+})();
+</script>
+
+<script>
+(function () {
+  const BRIDGE_URL = 'https://bot.frostclient.eu/partner-assets';
+  const TOKEN_KEY = 'frostPartnerDashToken';
+
+  const states = ['stateLoading', 'stateError', 'stateData'];
+  function show(id) {
+    states.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
+    const isPartner = id === 'stateData';
+    document.getElementById('navLinks').style.display = isPartner ? 'flex' : 'none';
+    document.getElementById('navLogoText').textContent = isPartner ? 'PARTNER DASHBOARD' : 'Frost';
+    document.getElementById('navLogoIcon').src = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
+    document.getElementById('favicon').href = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
+  }
+
+  function loadToken() {
+    try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+  }
+  function clearToken() {
+    try { localStorage.removeItem(TOKEN_KEY); } catch (e) {}
+  }
+
+  function showError(msg) {
+    document.getElementById('errorText').textContent = msg || 'Please try again.';
+    show('stateError');
+  }
+
+  function formatSize(bytes) {
+    if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    if (bytes >= 1024) return Math.round(bytes / 1024) + ' KB';
+    return bytes + ' B';
+  }
+
+  function isPreviewable(filename) {
+    return /\.(gif|png|jpe?g|webp)$/i.test(filename);
+  }
+
+  function renderAssets(assets, token) {
+    const grid = document.getElementById('assetGrid');
+    const empty = document.getElementById('assetEmpty');
+    grid.innerHTML = '';
+    if (!assets.length) {
+      empty.style.display = '';
+      return;
+    }
+    empty.style.display = 'none';
+    assets.forEach(a => {
+      const downloadUrl = BRIDGE_URL + '/download?token=' + encodeURIComponent(token) + '&file=' + encodeURIComponent(a.filename);
+      const card = document.createElement('div');
+      card.className = 'asset-card';
+
+      if (isPreviewable(a.filename)) {
+        const img = document.createElement('img');
+        img.className = 'asset-preview';
+        img.src = downloadUrl;
+        img.alt = a.filename;
+        img.loading = 'lazy';
+        card.appendChild(img);
+      }
+
+      const body = document.createElement('div');
+      body.className = 'asset-body';
+      const name = document.createElement('div');
+      name.className = 'asset-name';
+      name.textContent = a.filename;
+      const meta = document.createElement('div');
+      meta.className = 'asset-meta';
+      meta.textContent = formatSize(a.size);
+      const dl = document.createElement('a');
+      dl.className = 'asset-download';
+      dl.href = downloadUrl;
+      dl.textContent = '⬇ Download';
+      body.appendChild(name);
+      body.appendChild(meta);
+      body.appendChild(dl);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+  }
+
+  function loadAssets(token, retriesLeft) {
+    fetch(BRIDGE_URL + '?token=' + encodeURIComponent(token), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        if (!data || !data.ok) {
+          if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1); return; }
+          if (data && data.error === 'forbidden') { clearToken(); window.location.href = 'index'; return; }
+          showError('Could not load your assets. Please try again.');
+          return;
+        }
+        show('stateData');
+        renderAssets(data.assets || [], token);
+      })
+      .catch(() => {
+        if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1); return; }
+        showError('Network error while contacting the server. Please try again.');
+      });
+  }
+
+  document.getElementById('retryBtn').addEventListener('click', () => {
+    const token = loadToken();
+    if (!token) { window.location.href = 'index'; return; }
+    show('stateLoading');
+    loadAssets(token, 1);
+  });
+
+  (function init() {
+    const token = loadToken();
+    if (!token) { window.location.href = 'index'; return; }
+    show('stateLoading');
+    loadAssets(token, 1);
+  })();
+})();
+</script>
+</body>
+</html>
