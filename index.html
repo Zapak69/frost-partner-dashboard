@@ -140,6 +140,17 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  #pageTransition {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(4,6,9,0.55);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    opacity: 1; transition: opacity 0.3s ease;
+  }
+  #pageTransition .spinner { margin: 0; }
+  #pageTransition.hide { opacity: 0; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { #pageTransition { transition: none; } }
+
   .btn-discord {
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
     background: #5865F2; color: #fff; text-decoration: none; border: none; cursor: pointer;
@@ -613,6 +624,7 @@
 </style>
 </head>
 <body>
+<div id="pageTransition"><div class="spinner"></div></div>
 <div class="topo-bg">
   <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <defs><style>.tline{fill:none;stroke:#4fc8f8;stroke-width:1.2;}</style></defs>
@@ -1018,7 +1030,12 @@ for (let i = 0; i < 100; i++) particles.push({
 
   const states = ['stateLoading', 'stateLogin', 'stateWorking', 'stateNotMember', 'stateNotPartner', 'stateNotSetUp', 'stateError', 'stateData'];
   let workingHintTimer = null;
+  function hidePageTransition() {
+    const el = document.getElementById('pageTransition');
+    if (el) el.classList.add('hide');
+  }
   function show(id) {
+    hidePageTransition();
     states.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
     const loggedIn = id === 'stateData' || id === 'stateNotSetUp';
     const isPartner = id === 'stateData';
@@ -1689,28 +1706,39 @@ for (let i = 0; i < 100; i++) particles.push({
       .then(handleResponse)
       .catch(() => showError('Network error while contacting the server. Please try again.'));
   }
-
-  let refreshProgressHideTimer = null;
+  let refreshProgressInterval = null;
+  let refreshProgressResetTimer = null;
   function showRefreshProgress() {
-    const bar = document.getElementById('refreshProgress');
+    const bar = document.getElementById('refreshProgressBar');
     if (!bar) return;
-    clearTimeout(refreshProgressHideTimer);
-    bar.classList.remove('done');
+    clearInterval(refreshProgressInterval);
+    clearTimeout(refreshProgressResetTimer);
     bar.style.transition = 'none';
-    bar.style.transform = 'scaleX(0)';
+    bar.style.opacity = '1';
+    bar.style.width = '0%';
     void bar.offsetWidth;
-    bar.style.transition = '';
-    bar.classList.add('active');
+    bar.style.transition = 'width 0.2s ease';
+    let pct = 0;
+    refreshProgressInterval = setInterval(function () {
+      pct += (90 - pct) * 0.15;
+      bar.style.width = Math.min(pct, 90).toFixed(1) + '%';
+    }, 150);
   }
   function hideRefreshProgress() {
-    const bar = document.getElementById('refreshProgress');
+    const bar = document.getElementById('refreshProgressBar');
     if (!bar) return;
-    bar.classList.remove('active');
-    bar.classList.add('done');
-    refreshProgressHideTimer = setTimeout(function () {
-      bar.classList.remove('done');
+    clearInterval(refreshProgressInterval);
+    bar.style.transition = 'width 0.25s ease';
+    bar.style.width = '100%';
+    refreshProgressResetTimer = setTimeout(function () {
+      bar.style.transition = 'opacity 0.3s ease';
       bar.style.opacity = '0';
-    }, 300);
+      refreshProgressResetTimer = setTimeout(function () {
+        bar.style.transition = 'none';
+        bar.style.width = '0%';
+        bar.style.opacity = '1';
+      }, 300);
+    }, 250);
   }
   function recheckToken(token, isBackground) {
     showRefreshProgress();
@@ -1941,6 +1969,23 @@ for (let i = 0; i < 100; i++) particles.push({
 
   document.getElementById('withdrawOpenBtn').addEventListener('click', () => {
     openQwModal();
+  });
+
+  function isInternalDashboardLink(href) {
+    if (!href) return false;
+    if (/^(index|balance|assets)(\?.*)?(#.*)?$/.test(href)) return true;
+    if (/^https:\/\/partner\.frostclient\.eu\/?(balance|assets)?(\?.*)?(#.*)?$/i.test(href)) return true;
+    return false;
+  }
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest('a');
+    if (!a || a.target === '_blank') return;
+    const href = a.getAttribute('href');
+    if (!isInternalDashboardLink(href)) return;
+    e.preventDefault();
+    const el = document.getElementById('pageTransition');
+    if (el) el.classList.remove('hide');
+    setTimeout(function () { window.location.href = a.href; }, 120);
   });
 
   (function init() {
