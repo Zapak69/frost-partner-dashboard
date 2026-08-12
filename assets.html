@@ -24,11 +24,12 @@
   #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
   nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 68px;
-    backdrop-filter: blur(20px); background: rgba(8,12,16,0.9);
-    border-bottom: 1px solid var(--border);
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 100;
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px;
+    width: calc(100% - 32px); max-width: 1240px;
+    padding: 0 28px; height: 64px;
+    backdrop-filter: blur(20px); background: rgba(8,12,16,0.95);
+    border: 1px solid var(--border); border-radius: 18px;
   }
   .nav-logo {
     display: inline-flex; align-items: center; gap: 8px;
@@ -46,15 +47,16 @@
   .nav-link { color: var(--muted); font-size: 14px; font-weight: 600; text-decoration: none; transition: color 0.2s; }
   .nav-link:hover { color: var(--text); }
   .nav-link.active { color: var(--frost-blue); }
-  .nav-links { display: none; align-items: center; gap: 18px; }
-  @media (max-width: 480px) {
-    nav { padding: 0 16px; }
+  .nav-links { display: none; align-items: center; justify-content: center; gap: 18px; }
+  .nav-right { display: flex; align-items: center; justify-content: flex-end; }
+  @media (max-width: 700px) {
+    nav { width: calc(100% - 20px); padding: 0 16px; gap: 10px; }
     .nav-back { font-size: 12px; }
     .nav-link { font-size: 12px; }
     .nav-links { gap: 12px; }
   }
 
-  .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 140px 24px 100px; }
+  .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 130px 24px 100px; }
 
   .gate { max-width: 460px; margin: 60px auto 0; text-align: center; }
   .gate h1 {
@@ -95,15 +97,29 @@
 
   .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
   .asset-card {
+    position: relative;
     background: linear-gradient(180deg, rgba(17,29,43,0.92), rgba(12,20,30,0.92));
     border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
     display: flex; flex-direction: column;
     transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), border-color 0.25s, box-shadow 0.25s;
   }
   .asset-card:hover { transform: translateY(-3px); border-color: rgba(79,200,248,0.3); box-shadow: 0 10px 26px rgba(0,0,0,0.25); }
+  .asset-card.is-new { border-color: rgba(255,202,40,0.55); }
+  .asset-card.is-new:hover { border-color: rgba(255,202,40,0.75); box-shadow: 0 10px 26px rgba(255,202,40,0.12); }
+  .asset-new-badge {
+    position: absolute; top: 10px; left: 10px; z-index: 2;
+    background: linear-gradient(135deg, var(--amber), var(--amber-deep)); color: #1a0f00;
+    font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 4px 9px; border-radius: 6px;
+  }
   .asset-preview {
     width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: rgba(8,12,16,0.6);
     border-bottom: 1px solid var(--border); display: block;
+  }
+  .asset-preview-generic {
+    width: 100%; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center;
+    background: rgba(8,12,16,0.6); border-bottom: 1px solid var(--border);
+    font-size: 32px; color: var(--muted);
   }
   .asset-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
   .asset-name { font-size: 13.5px; font-weight: 600; word-break: break-all; }
@@ -117,7 +133,14 @@
   }
   .asset-download:hover { background: rgba(79,200,248,0.18); border-color: rgba(79,200,248,0.4); }
 
-  .empty-note { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14.5px; }
+  .empty-note { text-align: center; padding: 24px 20px 32px; color: var(--muted); font-size: 14.5px; }
+
+  @keyframes skeletonPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.9; } }
+  .skeleton-preview { width: 100%; aspect-ratio: 16 / 9; background: rgba(255,255,255,0.05); animation: skeletonPulse 1.8s ease-in-out infinite; }
+  .skeleton-line { height: 10px; border-radius: 4px; background: rgba(255,255,255,0.06); animation: skeletonPulse 1.8s ease-in-out infinite; }
+  .skeleton-line.short { width: 45%; }
+  .skeleton-line.tall { height: 30px; margin-top: auto; border-radius: 9px; }
+  @media (prefers-reduced-motion: reduce) { .skeleton-preview, .skeleton-line { animation: none; opacity: 0.6; } }
 
   @media (max-width: 600px) {
     .page-head { text-align: left; }
@@ -222,6 +245,16 @@ for (let i = 0; i < 100; i++) particles.push({
 (function () {
   const BRIDGE_URL = 'https://bot.frostclient.eu/partner-assets';
   const TOKEN_KEY = 'frostPartnerDashToken';
+  const LAST_VISIT_KEY = 'frostPartnerAssetsLastVisit';
+  function loadLastVisit() {
+    try {
+      const v = localStorage.getItem(LAST_VISIT_KEY);
+      return v ? parseInt(v, 10) : null;
+    } catch (e) { return null; }
+  }
+  function saveLastVisitNow() {
+    try { localStorage.setItem(LAST_VISIT_KEY, String(Date.now())); } catch (e) {}
+  }
 
   const states = ['stateLoading', 'stateError', 'stateData'];
   function show(id) {
@@ -255,19 +288,45 @@ for (let i = 0; i < 100; i++) particles.push({
     return /\.(gif|png|jpe?g|webp)$/i.test(filename);
   }
 
-  function renderAssets(assets, token) {
+  function renderSkeletons(count) {
+    const grid = document.getElementById('assetGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const card = document.createElement('div');
+      card.className = 'asset-card';
+      card.innerHTML =
+        '<div class="skeleton-preview"></div>' +
+        '<div class="asset-body">' +
+          '<div class="skeleton-line"></div>' +
+          '<div class="skeleton-line short"></div>' +
+          '<div class="skeleton-line tall"></div>' +
+        '</div>';
+      grid.appendChild(card);
+    }
+  }
+
+  function renderAssets(assets, token, lastVisit) {
     const grid = document.getElementById('assetGrid');
     const empty = document.getElementById('assetEmpty');
     grid.innerHTML = '';
     if (!assets.length) {
       empty.style.display = '';
+      renderSkeletons(3);
       return;
     }
     empty.style.display = 'none';
     assets.forEach(a => {
       const downloadUrl = BRIDGE_URL + '/download?token=' + encodeURIComponent(token) + '&file=' + encodeURIComponent(a.filename);
+      const isNew = lastVisit != null && Date.parse(a.mtime) > lastVisit;
       const card = document.createElement('div');
-      card.className = 'asset-card';
+      card.className = 'asset-card' + (isNew ? ' is-new' : '');
+
+      if (isNew) {
+        const badge = document.createElement('span');
+        badge.className = 'asset-new-badge';
+        badge.textContent = 'NEW';
+        card.appendChild(badge);
+      }
 
       if (isPreviewable(a.filename)) {
         const img = document.createElement('img');
@@ -276,6 +335,11 @@ for (let i = 0; i < 100; i++) particles.push({
         img.alt = a.filename;
         img.loading = 'lazy';
         card.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'asset-preview-generic';
+        placeholder.textContent = '📄';
+        card.appendChild(placeholder);
       }
 
       const body = document.createElement('div');
@@ -298,21 +362,22 @@ for (let i = 0; i < 100; i++) particles.push({
     });
   }
 
-  function loadAssets(token, retriesLeft) {
+  function loadAssets(token, retriesLeft, lastVisit) {
     fetch(BRIDGE_URL + '?token=' + encodeURIComponent(token), { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
         if (!data || !data.ok) {
-          if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1); return; }
+          if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1, lastVisit); return; }
           if (data && data.error === 'forbidden') { clearToken(); window.location.href = 'index'; return; }
           showError('Could not load your assets. Please try again.');
           return;
         }
         show('stateData');
-        renderAssets(data.assets || [], token);
+        renderAssets(data.assets || [], token, lastVisit);
+        saveLastVisitNow();
       })
       .catch(() => {
-        if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1); return; }
+        if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1, lastVisit); return; }
         showError('Network error while contacting the server. Please try again.');
       });
   }
@@ -321,14 +386,14 @@ for (let i = 0; i < 100; i++) particles.push({
     const token = loadToken();
     if (!token) { window.location.href = 'index'; return; }
     show('stateLoading');
-    loadAssets(token, 1);
+    loadAssets(token, 1, loadLastVisit());
   });
 
   (function init() {
     const token = loadToken();
     if (!token) { window.location.href = 'index'; return; }
     show('stateLoading');
-    loadAssets(token, 1);
+    loadAssets(token, 1, loadLastVisit());
   })();
 })();
 </script>

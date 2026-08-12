@@ -24,11 +24,12 @@
   #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
   nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 68px;
-    backdrop-filter: blur(20px); background: rgba(8,12,16,0.9);
-    border-bottom: 1px solid var(--border);
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 100;
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px;
+    width: calc(100% - 32px); max-width: 1240px;
+    padding: 0 28px; height: 64px;
+    backdrop-filter: blur(20px); background: rgba(8,12,16,0.95);
+    border: 1px solid var(--border); border-radius: 18px;
   }
   .nav-logo {
     display: inline-flex; align-items: center; gap: 8px;
@@ -46,15 +47,16 @@
   .nav-link { color: var(--muted); font-size: 14px; font-weight: 600; text-decoration: none; transition: color 0.2s; }
   .nav-link:hover { color: var(--text); }
   .nav-link.active { color: var(--frost-blue); }
-  .nav-links { display: none; align-items: center; gap: 18px; }
-  @media (max-width: 480px) {
-    nav { padding: 0 16px; }
+  .nav-links { display: none; align-items: center; justify-content: center; gap: 18px; }
+  .nav-right { display: flex; align-items: center; justify-content: flex-end; }
+  @media (max-width: 700px) {
+    nav { width: calc(100% - 20px); padding: 0 16px; gap: 10px; }
     .nav-back { font-size: 12px; }
     .nav-link { font-size: 12px; }
     .nav-links { gap: 12px; }
   }
 
-  .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 140px 24px 100px; }
+  .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 130px 24px 100px; }
 
   .gate { max-width: 460px; margin: 60px auto 0; text-align: center; }
   .gate h1 {
@@ -111,19 +113,31 @@
   }
   @media (prefers-reduced-motion: reduce) { .tier-badge.plus { animation: none; box-shadow: 0 0 14px rgba(255,202,40,0.3); } }
 
-  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 40px; }
-  .stat-tile {
-    background: linear-gradient(180deg, rgba(17,29,43,0.92), rgba(12,20,30,0.92));
-    border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;
-    transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), border-color 0.25s, box-shadow 0.25s;
+  .balance-hero {
+    background: linear-gradient(160deg, rgba(255,202,40,0.1), rgba(17,29,43,0.92) 60%);
+    border: 1px solid rgba(255,202,40,0.28); border-radius: 20px;
+    padding: 28px 30px; margin-bottom: 28px;
+    display: flex; flex-wrap: wrap; gap: 28px; align-items: center; justify-content: space-between;
   }
-  .stat-tile:hover { transform: translateY(-3px); border-color: rgba(79,200,248,0.3); box-shadow: 0 10px 26px rgba(0,0,0,0.25); }
-  .stat-tile .num {
-    font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--frost-blue);
+  .balance-hero-main { min-width: 220px; }
+  .balance-hero-label { font-family: 'Space Mono', monospace; font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .balance-hero-value {
+    font-family: 'Space Mono', monospace; font-size: clamp(34px, 5vw, 46px); font-weight: 700;
+    color: var(--amber); line-height: 1; margin-bottom: 10px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
+  }
+  .balance-hero-hint { font-size: 12.5px; color: var(--muted); line-height: 1.6; max-width: 320px; }
+  .balance-hero-side { display: flex; gap: 28px; flex-wrap: wrap; }
+  .balance-hero-stat { min-width: 140px; max-width: 180px; }
+  .balance-hero-stat .num {
+    font-family: 'Space Mono', monospace; font-size: 21px; font-weight: 700; color: var(--frost-blue);
     margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .stat-tile.highlight .num { color: var(--amber); }
-  .stat-tile .label { font-size: 12px; color: var(--muted); }
+  .balance-hero-stat .label { font-size: 11.5px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .balance-hero-stat .hint { font-size: 11px; color: var(--muted); opacity: 0.85; line-height: 1.45; }
+
+  .withdraw-columns { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: start; }
+  @media (max-width: 800px) { .withdraw-columns { grid-template-columns: 1fr; } }
 
   .chart-section { margin-bottom: 24px; }
   .tracker-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -257,74 +271,90 @@
         <h1>Withdraw</h1>
         <span class="tier-badge" id="partnerTierBadge"></span>
       </div>
-      <p>Request a payout of your available balance.</p>
+      <p>Cash out your commission whenever you've got enough available.</p>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-tile"><div class="num" id="statEarnings">—</div><div class="label">All-Time Earnings</div></div>
-      <div class="stat-tile"><div class="num" id="statBalance">—</div><div class="label">Balance</div></div>
-      <div class="stat-tile highlight"><div class="num" id="statAvailable">—</div><div class="label">Available</div></div>
-    </div>
-
-    <div class="chart-section">
-      <div class="tracker-head"><h2>Request a withdrawal</h2></div>
-      <div class="chart-card">
-        <div class="withdraw-state active" id="withdrawStateForm">
-          <p class="withdraw-sub">Available to withdraw: <strong id="withdrawAvailableText">—</strong></p>
-
-          <div class="withdraw-step active" id="withdrawStepAmount">
-            <div class="withdraw-field">
-              <label>Amount</label>
-              <div class="withdraw-amount-row">
-                <input type="number" class="withdraw-input" id="withdrawAmount" placeholder="0.00" min="0" step="0.01"/>
-                <button type="button" class="withdraw-max-btn" id="withdrawMaxBtn">Max</button>
-              </div>
-            </div>
-            <p class="withdraw-error" id="withdrawAmountError" style="display:none;"></p>
-            <button type="button" class="withdraw-btn" id="withdrawContinueBtn" disabled>Continue</button>
-          </div>
-
-          <div class="withdraw-step" id="withdrawStepDetails">
-            <button type="button" class="withdraw-back-btn" id="withdrawBackBtn">← Change amount</button>
-            <div class="withdraw-field">
-              <label>PayPal email</label>
-              <input type="email" class="withdraw-input" id="withdrawEmail1" placeholder="you@example.com" autocomplete="off"/>
-            </div>
-            <div class="withdraw-field">
-              <label>Confirm PayPal email</label>
-              <input type="email" class="withdraw-input" id="withdrawEmail2" placeholder="you@example.com" autocomplete="off"/>
-            </div>
-            <label class="withdraw-checkbox-row">
-              <input type="checkbox" id="withdrawConfirmAmount"/>
-              <span>I understand the final paid amount may differ slightly from the estimate shown.</span>
-            </label>
-            <label class="withdraw-checkbox-row">
-              <input type="checkbox" id="withdrawConfirmEmail"/>
-              <span>I confirm my PayPal email above is correct.</span>
-            </label>
-            <p class="withdraw-error" id="withdrawFormError" style="display:none;"></p>
-            <button type="button" class="withdraw-btn" id="withdrawSubmitBtn" disabled>Submit Request</button>
-          </div>
+    <div class="balance-hero">
+      <div class="balance-hero-main">
+        <div class="balance-hero-label">Available to withdraw</div>
+        <div class="balance-hero-value" id="statAvailable">—</div>
+        <div class="balance-hero-hint">Ready to request right now — orders need to be at least 1 month old to count, and this already excludes any request you have pending.</div>
+      </div>
+      <div class="balance-hero-side">
+        <div class="balance-hero-stat">
+          <div class="num" id="statEarnings">—</div>
+          <div class="label">All-time earnings</div>
+          <div class="hint">Total commission from every order, lifetime.</div>
         </div>
-
-        <div class="withdraw-state" id="withdrawStateSubmitting">
-          <div class="spinner"></div>
-          <p class="withdraw-sub" style="text-align:center;margin-bottom:0;">Submitting your request…</p>
-        </div>
-
-        <div class="withdraw-state" id="withdrawStateDone">
-          <div class="withdraw-title">Request sent 🎉</div>
-          <p class="withdraw-sub" style="margin-bottom:16px;">We'll process your withdrawal and reach out on Discord if we need anything else.</p>
-          <button type="button" class="withdraw-btn" id="withdrawAnotherBtn">Submit another request</button>
+        <div class="balance-hero-stat">
+          <div class="num" id="statBalance">—</div>
+          <div class="label">Balance</div>
+          <div class="hint">Earnings minus everything already paid out.</div>
         </div>
       </div>
     </div>
 
-    <div class="chart-section">
-      <div class="tracker-head"><h2>Withdraw history</h2></div>
-      <div class="chart-card">
-        <div class="history-list" id="withdrawHistoryList"></div>
-        <div class="chart-empty" id="withdrawHistoryEmpty" style="display:none;">No withdrawal requests yet.</div>
+    <div class="withdraw-columns">
+      <div class="chart-section">
+        <div class="tracker-head"><h2>Request a withdrawal</h2></div>
+        <div class="chart-card">
+          <div class="withdraw-state active" id="withdrawStateForm">
+            <p class="withdraw-sub">Available to withdraw: <strong id="withdrawAvailableText">—</strong></p>
+
+            <div class="withdraw-step active" id="withdrawStepAmount">
+              <div class="withdraw-field">
+                <label>Amount</label>
+                <div class="withdraw-amount-row">
+                  <input type="number" class="withdraw-input" id="withdrawAmount" placeholder="0.00" min="0" step="0.01"/>
+                  <button type="button" class="withdraw-max-btn" id="withdrawMaxBtn">Max</button>
+                </div>
+              </div>
+              <p class="withdraw-error" id="withdrawAmountError" style="display:none;"></p>
+              <button type="button" class="withdraw-btn" id="withdrawContinueBtn" disabled>Continue</button>
+            </div>
+
+            <div class="withdraw-step" id="withdrawStepDetails">
+              <button type="button" class="withdraw-back-btn" id="withdrawBackBtn">← Change amount</button>
+              <div class="withdraw-field">
+                <label>PayPal email</label>
+                <input type="email" class="withdraw-input" id="withdrawEmail1" placeholder="you@example.com" autocomplete="off"/>
+              </div>
+              <div class="withdraw-field">
+                <label>Confirm PayPal email</label>
+                <input type="email" class="withdraw-input" id="withdrawEmail2" placeholder="you@example.com" autocomplete="off"/>
+              </div>
+              <label class="withdraw-checkbox-row">
+                <input type="checkbox" id="withdrawConfirmAmount"/>
+                <span>I understand the final paid amount may differ slightly from the estimate shown.</span>
+              </label>
+              <label class="withdraw-checkbox-row">
+                <input type="checkbox" id="withdrawConfirmEmail"/>
+                <span>I confirm my PayPal email above is correct.</span>
+              </label>
+              <p class="withdraw-error" id="withdrawFormError" style="display:none;"></p>
+              <button type="button" class="withdraw-btn" id="withdrawSubmitBtn" disabled>Submit Request</button>
+            </div>
+          </div>
+
+          <div class="withdraw-state" id="withdrawStateSubmitting">
+            <div class="spinner"></div>
+            <p class="withdraw-sub" style="text-align:center;margin-bottom:0;">Submitting your request…</p>
+          </div>
+
+          <div class="withdraw-state" id="withdrawStateDone">
+            <div class="withdraw-title">Request sent 🎉</div>
+            <p class="withdraw-sub" style="margin-bottom:16px;">We'll process your withdrawal and reach out on Discord if we need anything else.</p>
+            <button type="button" class="withdraw-btn" id="withdrawAnotherBtn">Submit another request</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-section">
+        <div class="tracker-head"><h2>History</h2></div>
+        <div class="chart-card">
+          <div class="history-list" id="withdrawHistoryList"></div>
+          <div class="chart-empty" id="withdrawHistoryEmpty" style="display:none;">No withdrawal requests yet.</div>
+        </div>
       </div>
     </div>
   </div>
