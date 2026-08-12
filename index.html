@@ -94,17 +94,7 @@
   .gate.denied h1 { color: var(--red); }
 
   .login-hero { max-width: 680px; margin: 20px auto 0; text-align: center; }
-  .login-badge {
-    width: 64px; height: 64px; margin: 0 auto 26px; border-radius: 18px;
-    background: linear-gradient(160deg, rgba(79,200,248,0.18), rgba(79,200,248,0.03));
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 40px rgba(79,200,248,0.15);
-    animation: floatBadge 4s ease-in-out infinite;
-  }
-  .login-badge img { width: 30px; height: 30px; filter: drop-shadow(0 0 10px rgba(79,200,248,0.5)); }
-  @keyframes floatBadge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-  @media (prefers-reduced-motion: reduce) { .login-badge { animation: none; } }
+  .login-badge-spacer { height: 64px; margin: 0 auto 26px; }
   .login-hero h1 {
     font-family: 'Space Mono', monospace; font-size: clamp(30px, 5vw, 44px);
     font-weight: 700; letter-spacing: -1.5px; margin-bottom: 16px;
@@ -676,7 +666,7 @@
 
   <div id="stateLogin" class="state">
     <div class="login-hero">
-      <div class="login-badge"><img src="favicon.ico" alt=""/></div>
+      <div class="login-badge-spacer"></div>
       <div class="gate-eyebrow">Frost Partner Program</div>
       <h1>Your Partner Dashboard</h1>
       <p>Track referred orders, watch your earnings grow, and request withdrawals — all in one place. Sign in with the Discord account that holds your Partner role to get started.</p>
