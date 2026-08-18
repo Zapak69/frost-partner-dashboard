@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Partner Dashboard | Frost</title>
+<title>Creator Dashboard | Frost</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico" id="favicon">
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="index.css">
@@ -61,13 +61,13 @@
   <div id="stateLogin" class="state">
     <div class="login-hero">
       <div class="login-badge-spacer"></div>
-      <div class="gate-eyebrow">Frost Partner Program</div>
-      <h1>Your Partner Dashboard</h1>
-      <p>Track referred orders, watch your earnings grow, and request withdrawals — all in one place. Sign in with the Discord account that holds your Partner role to get started.</p>
+      <div class="gate-eyebrow">Frost Creator Program</div>
+      <h1>Your Creator Dashboard</h1>
+      <p>Track referred orders, watch your earnings grow, and request withdrawals — all in one place. Sign in with the same Discord account you signed up with to get started.</p>
       <button type="button" class="btn-discord" id="loginBtn">
         <img src="https://frostclient.eu/icons/discord.webp" alt=""/> Sign in with Discord
       </button>
-      <p class="login-become-partner">Not a partner yet? <a href="https://frostclient.eu/partner">Become a partner →</a></p>
+      <p class="login-become-partner">Not a creator yet? <a href="https://frostclient.eu/partner">Become a creator →</a></p>
 
       <div class="login-features">
         <div class="login-feature">
@@ -109,16 +109,16 @@
 
   <div id="stateNotPartner" class="state">
     <div class="gate denied">
-      <h1>No Partner role found</h1>
-      <p>This Discord account doesn't have the Partner role, so there's no dashboard to show. If you think this is a mistake, reach out to us on Discord.</p>
-      <a class="btn-secondary" href="https://frostclient.eu/partner">Apply to become a partner</a>
+      <h1>No Creator role found</h1>
+      <p>This Discord account doesn't have a Creator role, so there's no dashboard to show. If you think this is a mistake, reach out to us on Discord.</p>
+      <a class="btn-secondary" href="https://frostclient.eu/partner">Become a creator</a>
     </div>
   </div>
 
   <div id="stateNotSetUp" class="state">
     <div class="gate denied">
       <h1>Almost there</h1>
-      <p>You've got the Partner role, but your account isn't fully set up on our end yet (no discount code assigned). Ping us on Discord and we'll finish setting it up.</p>
+      <p>You've got a Creator role, but your account isn't fully set up on our end yet (no discount code assigned). Ping us on Discord and we'll finish setting it up.</p>
       <a class="btn-secondary" href="https://discord.gg/Kn8ydsABU8" target="_blank">Message us on Discord</a>
     </div>
   </div>
@@ -179,6 +179,20 @@
           <div class="quick-action-value">Banners, logos &amp; marketing files</div>
         </div>
         <div class="quick-action-arrow">→</div>
+      </a>
+      <a class="quick-action-card" href="assets" id="quickDownloadCard">
+        <div class="quick-action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v12"/>
+            <path d="M7 10l5 5 5-5"/>
+            <path d="M5 21h14"/>
+          </svg>
+        </div>
+        <div class="quick-action-body">
+          <div class="quick-action-title">Instant download</div>
+          <div class="quick-action-value" id="quickDownloadValue">Loading your assets…</div>
+        </div>
+        <div class="quick-action-arrow" id="quickDownloadArrow">→</div>
       </a>
     </div>
 
@@ -256,7 +270,7 @@
       <a href="https://frostclient.eu/settings">Transferring Settings</a>
       <a href="https://frostclient.eu/reviews">Reviews</a>
       <a href="https://frostclient.eu/leaderboard">Leaderboard</a>
-      <a href="https://frostclient.eu/partner">Partner Program</a>
+      <a href="https://frostclient.eu/partner">Creator Program</a>
     </div>
     <div class="footer-col">
       <h4>Account</h4>
@@ -265,7 +279,7 @@
       <a href="https://frostclient.eu/lite/download" class="js-lite-access-link">Download Lite</a>
     </div>
     <div class="footer-col">
-      <h4>Partner</h4>
+      <h4>Creator</h4>
       <a href="https://partner.frostclient.eu">Dashboard</a>
       <a href="https://partner.frostclient.eu/balance">Balance</a>
       <a href="https://partner.frostclient.eu/assets">Assets</a>

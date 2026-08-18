@@ -35,6 +35,14 @@ for (let i = 0; i < 100; i++) particles.push({
   const BOT_API_URL = 'https://bot.frostclient.eu';
   const RANKUP_NEXT_TIER = { media: 'partner', partner: 'partner_plus' };
   const RANKUP_MIN_ORDERS = 5;
+  const ASSETS_BRIDGE_URL = BOT_API_URL + '/partner-assets';
+  const MEDIA_BANNER_UNLOCK_ORDERS = 3;
+  const TIER_FAVICONS = { media: 'favicons/media.ico', partner: 'favicons/partner.ico', partner_plus: 'favicons/partner+.ico' };
+  function applyTierFavicon(tier) {
+    const src = TIER_FAVICONS[tier] || 'favicon.ico';
+    document.getElementById('navLogoIcon').src = src;
+    document.getElementById('favicon').href = src;
+  }
   const RANKUP_PENDING_KEY = 'frostPartnerRankupPending';
   const LAST_TIER_KEY = 'frostPartnerLastTier';
   const TOKEN_KEY = 'frostPartnerDashToken';
@@ -58,7 +66,7 @@ for (let i = 0; i < 100; i++) particles.push({
     document.getElementById('withdrawOpenBtn').style.display = isPartner ? 'inline-flex' : 'none';
     document.getElementById('notifBellBtn').style.display = isPartner ? 'inline-flex' : 'none';
     document.getElementById('navLinks').style.display = isPartner ? 'flex' : 'none';
-    document.getElementById('navLogoText').textContent = isPartner ? 'PARTNER DASHBOARD' : 'FROST';
+    document.getElementById('navLogoText').textContent = isPartner ? 'CREATOR DASHBOARD' : 'FROST';
     document.getElementById('navLogoIcon').src = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
     document.getElementById('favicon').href = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
 
@@ -362,18 +370,51 @@ for (let i = 0; i < 100; i++) particles.push({
     if (textEl) textEl.textContent = "You've placed " + totalOrders + ' orders — you qualify to request a rank-up to ' + TIER_LABELS[nextTier] + '.';
   }
 
+  function isBannerAsset(filename) {
+    return /banner/i.test(filename);
+  }
+
+  function loadQuickDownloadAsset(token, tier, totalOrders) {
+    const card = document.getElementById('quickDownloadCard');
+    const valueEl = document.getElementById('quickDownloadValue');
+    const arrowEl = document.getElementById('quickDownloadArrow');
+    if (!card || !valueEl || !token) return;
+    fetch(ASSETS_BRIDGE_URL + '?token=' + encodeURIComponent(token), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        if (!data || !data.ok) return;
+        const assets = data.assets || [];
+        const bannerLocked = tier === 'media' && (totalOrders || 0) < MEDIA_BANNER_UNLOCK_ORDERS;
+        const available = assets.filter(a => !(bannerLocked && isBannerAsset(a.filename)));
+        if (!available.length) {
+          valueEl.textContent = assets.length ? 'Unlocks after ' + MEDIA_BANNER_UNLOCK_ORDERS + ' orders' : 'No assets yet';
+          card.href = 'assets';
+          card.removeAttribute('download');
+          if (arrowEl) arrowEl.textContent = '→';
+          return;
+        }
+        const top = available.slice().sort((a, b) => Date.parse(b.mtime) - Date.parse(a.mtime))[0];
+        valueEl.textContent = top.filename;
+        card.href = ASSETS_BRIDGE_URL + '/download?token=' + encodeURIComponent(token) + '&file=' + encodeURIComponent(top.filename);
+        card.setAttribute('download', top.filename);
+        if (arrowEl) arrowEl.textContent = '⬇';
+      })
+      .catch(() => {});
+  }
+
   function renderDashboard(data) {
     lastData = data;
     document.getElementById('timeChartLoading').style.display = 'none';
     document.getElementById('monthlyChartLoading').style.display = 'none';
     document.getElementById('partnerAvatar').src = avatarUrl(data.user);
-    document.getElementById('partnerName').textContent = (data.user && (data.user.name || data.user.username)) || 'Partner';
+    document.getElementById('partnerName').textContent = (data.user && (data.user.name || data.user.username)) || 'Creator';
     document.getElementById('partnerRate').textContent = data.percentage + '% commission on referred orders';
     const TIER_LABELS = { media: 'Media', partner: 'Partner', partner_plus: 'Partner+' };
     const TIER_CLASSES = { partner: ' partner', partner_plus: ' plus' };
     const tierBadge = document.getElementById('partnerTierBadge');
     tierBadge.textContent = TIER_LABELS[data.tier] || 'Partner';
     tierBadge.className = 'tier-badge' + (TIER_CLASSES[data.tier] || '');
+    applyTierFavicon(data.tier);
     renderRankupBanner(data);
     document.getElementById('partnerCode').textContent = data.code || '—';
     document.getElementById('statTotalOrders').textContent = data.totalOrders != null ? data.totalOrders : '—';
@@ -739,6 +780,7 @@ for (let i = 0; i < 100; i++) particles.push({
       checkNotifications(data);
       show('stateData');
       renderDashboard(data);
+      loadQuickDownloadAsset(data.partnerDashToken || loadToken(), data.tier, data.totalOrders);
       startAutoRefresh();
       return;
     }
@@ -1157,6 +1199,7 @@ for (let i = 0; i < 100; i++) particles.push({
     if (cached) {
       show('stateData');
       renderDashboard(cached);
+      loadQuickDownloadAsset(token, cached.tier, cached.totalOrders);
     } else {
       show('stateWorking');
     }

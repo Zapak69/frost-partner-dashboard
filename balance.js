@@ -34,6 +34,12 @@ for (let i = 0; i < 100; i++) particles.push({
   const LITE_API_URL = 'https://script.google.com/macros/s/AKfycbxF57u1UNBsonktp5_2EseJtFkBZR0-CCxyazOGVUmEBrcwjU1-t6Us41gcrRqCsGcR/exec';
   const TOKEN_KEY = 'frostPartnerDashToken';
   const CACHE_KEY = 'frostPartnerDashCache';
+  const TIER_FAVICONS = { media: 'favicons/media.ico', partner: 'favicons/partner.ico', partner_plus: 'favicons/partner+.ico' };
+  function applyTierFavicon(tier) {
+    const src = TIER_FAVICONS[tier] || 'favicon.ico';
+    document.getElementById('navLogoIcon').src = src;
+    document.getElementById('favicon').href = src;
+  }
 
   const states = ['stateLoading', 'stateError', 'stateData'];
   function hidePageTransition() {
@@ -45,7 +51,7 @@ for (let i = 0; i < 100; i++) particles.push({
     states.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
     const isPartner = id === 'stateData';
     document.getElementById('navLinks').style.display = isPartner ? 'flex' : 'none';
-    document.getElementById('navLogoText').textContent = isPartner ? 'PARTNER DASHBOARD' : 'Frost';
+    document.getElementById('navLogoText').textContent = isPartner ? 'CREATOR DASHBOARD' : 'Frost';
     document.getElementById('navLogoIcon').src = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
     document.getElementById('favicon').href = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
     document.getElementById('notifBellBtn').style.display = isPartner ? 'inline-flex' : 'none';
@@ -203,6 +209,7 @@ for (let i = 0; i < 100; i++) particles.push({
     const tierBadge = document.getElementById('partnerTierBadge');
     tierBadge.textContent = TIER_LABELS[data.tier] || 'Partner';
     tierBadge.className = 'tier-badge' + (TIER_CLASSES[data.tier] || '');
+    applyTierFavicon(data.tier);
     const wallet = data.walletSummary || {};
     document.getElementById('statEarnings').textContent = fmtMoney(wallet.earnings);
     document.getElementById('statAvailable').textContent = fmtMoney(wallet.available);

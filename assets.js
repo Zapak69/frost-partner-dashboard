@@ -55,7 +55,7 @@ for (let i = 0; i < 100; i++) particles.push({
     states.forEach(s => document.getElementById(s).classList.toggle('active', s === id));
     const isPartner = id === 'stateData';
     document.getElementById('navLinks').style.display = isPartner ? 'flex' : 'none';
-    document.getElementById('navLogoText').textContent = isPartner ? 'PARTNER DASHBOARD' : 'Frost';
+    document.getElementById('navLogoText').textContent = isPartner ? 'CREATOR DASHBOARD' : 'Frost';
     document.getElementById('navLogoIcon').src = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
     document.getElementById('favicon').href = isPartner ? 'favicon.ico' : 'https://frostclient.eu/favicon.ico';
     document.getElementById('notifBellBtn').style.display = isPartner ? 'inline-flex' : 'none';
@@ -73,6 +73,12 @@ for (let i = 0; i < 100; i++) particles.push({
   function showError(msg) {
     document.getElementById('errorText').textContent = msg || 'Please try again.';
     show('stateError');
+  }
+  const TIER_FAVICONS = { media: 'favicons/media.ico', partner: 'favicons/partner.ico', partner_plus: 'favicons/partner+.ico' };
+  function applyTierFavicon(tier) {
+    const src = TIER_FAVICONS[tier] || 'favicon.ico';
+    document.getElementById('navLogoIcon').src = src;
+    document.getElementById('favicon').href = src;
   }
   const NOTIFICATIONS_KEY = 'frostPartnerNotifications';
   const MAX_NOTIFICATIONS = 40;
@@ -415,6 +421,7 @@ for (let i = 0; i < 100; i++) particles.push({
       .then(data => {
         if (!data || !data.ok || data.status !== 'eligible') return;
         tierInfo = { tier: data.tier || null, totalOrders: data.totalOrders || 0, loaded: true };
+        applyTierFavicon(tierInfo.tier);
         if (lastRenderedAssets) renderAssets(lastRenderedAssets, lastRenderedToken, lastRenderedVisit);
       })
       .catch(() => {});
