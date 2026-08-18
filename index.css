@@ -81,14 +81,15 @@
   .login-become-partner { font-size: 13px; color: var(--muted); margin-top: 16px; }
   .login-become-partner a { color: var(--frost-blue); text-decoration: none; font-weight: 600; transition: color 0.2s; }
   .login-become-partner a:hover { text-decoration: underline; }
-  .login-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 48px; text-align: left; }
+  .login-features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 48px; text-align: left; }
   .login-feature {
     background: var(--surface);
     border: 1px solid var(--border); border-radius: 18px; padding: 18px;
     transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), border-color 0.25s, background 0.25s;
   }
   .login-feature:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.24); background: var(--surface2); }
-  .login-feature-icon { font-size: 22px; margin-bottom: 10px; }
+  .login-feature-icon { width: 22px; height: 22px; margin-bottom: 10px; color: var(--frost-blue); }
+  .login-feature-icon svg { width: 100%; height: 100%; }
   .login-feature-title { font-size: 13.5px; font-weight: 700; margin-bottom: 6px; }
   .login-feature-desc { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
   @media (max-width: 640px) { .login-features { grid-template-columns: 1fr; } }
@@ -204,8 +205,7 @@
   .code-copy-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
   .code-copy-btn.copied { background: var(--green); }
 
-  .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
-  @media (max-width: 860px) { .quick-actions { grid-template-columns: 1fr 1fr; } }
+  .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
   @media (max-width: 560px) { .quick-actions { grid-template-columns: 1fr; } }
   .quick-action-card {
     position: relative; display: flex; align-items: center; gap: 16px;
