@@ -135,6 +135,10 @@
     padding: 3px 10px; border-radius: 980px;
     background: rgba(79,200,248,0.12); border: 1px solid rgba(79,200,248,0.35); color: var(--frost-blue);
   }
+  .tier-badge.partner {
+    background: rgba(191,90,242,0.14);
+    border: 1px solid rgba(191,90,242,0.4); color: #bf5af2;
+  }
   .tier-badge.plus {
     background: rgba(255,214,10,0.14);
     border: 1px solid rgba(255,214,10,0.4); color: var(--gold);

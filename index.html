@@ -147,6 +147,14 @@
       </div>
     </div>
 
+    <div class="rankup-banner" id="rankupBanner" style="display:none;">
+      <div class="rankup-banner-body">
+        <div class="rankup-banner-title">You qualify for a rank-up 🎉</div>
+        <p class="rankup-banner-text" id="rankupBannerText">You qualify to request a rank-up.</p>
+      </div>
+      <button type="button" class="rankup-banner-btn" id="rankupBannerBtn">Request rank-up</button>
+    </div>
+
     <div class="code-card">
       <div>
         <div class="code-card-label">Your discount code</div>
@@ -295,6 +303,25 @@
     </div>
   </div>
   <div class="notif-panel-list" id="notifPanelList"></div>
+</div>
+
+<div class="modal-overlay" id="rankupOverlay">
+  <div class="modal-box" id="rankupModal">
+    <button type="button" class="modal-close" id="rankupCloseBtn" aria-label="Close">✕</button>
+    <div class="modal-title">Request a rank-up</div>
+    <p class="withdraw-sub"><strong id="rankupCurrentTier">—</strong> → <strong id="rankupRequestedTier">—</strong> · <span id="rankupTotalOrders">0</span> orders so far</p>
+
+    <div class="withdraw-field">
+      <label>How many followers do you have?</label>
+      <input type="number" class="withdraw-input" id="rankupFollowers" placeholder="e.g. 2500" min="0" step="1"/>
+    </div>
+    <div class="withdraw-field">
+      <label>Link to your profile</label>
+      <input type="url" class="withdraw-input" id="rankupProfileLink" placeholder="https://..."/>
+    </div>
+    <p class="withdraw-error" id="rankupFormError" style="display:none;"></p>
+    <button type="button" class="withdraw-btn" id="rankupSubmitBtn">Send request</button>
+  </div>
 </div>
 
 <div class="modal-overlay" id="qwOverlay">

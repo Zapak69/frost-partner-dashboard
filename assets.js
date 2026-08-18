@@ -317,7 +317,21 @@ for (let i = 0; i < 100; i++) particles.push({
     }
   }
 
+  // Media partners don't unlock the banner asset until they've landed a few orders (see
+  // MEDIA_BANNER_UNLOCK_ORDERS below) - every other tier sees it immediately, same as today.
+  // There's no real asset-type field anywhere in the system (assets are just files in a
+  // per-partner folder - see BANNERS_DIR in bot.js), so "is this the banner asset" is a simple
+  // filename convention instead of new backend infrastructure.
+  const MEDIA_BANNER_UNLOCK_ORDERS = 3;
+  let tierInfo = { tier: null, totalOrders: 0, loaded: false };
+  let lastRenderedAssets = null, lastRenderedToken = null, lastRenderedVisit = null;
+
+  function isBannerAsset(filename) {
+    return /banner/i.test(filename);
+  }
+
   function renderAssets(assets, token, lastVisit) {
+    lastRenderedAssets = assets; lastRenderedToken = token; lastRenderedVisit = lastVisit;
     const grid = document.getElementById('assetGrid');
     const empty = document.getElementById('assetEmpty');
     grid.innerHTML = '';
@@ -327,17 +341,26 @@ for (let i = 0; i < 100; i++) particles.push({
       return;
     }
     empty.style.display = 'none';
+    const bannerLocked = tierInfo.tier === 'media' && tierInfo.totalOrders < MEDIA_BANNER_UNLOCK_ORDERS;
     assets.forEach(a => {
       const downloadUrl = BRIDGE_URL + '/download?token=' + encodeURIComponent(token) + '&file=' + encodeURIComponent(a.filename);
       const isNew = lastVisit != null && Date.parse(a.mtime) > lastVisit;
+      const locked = bannerLocked && isBannerAsset(a.filename);
       const card = document.createElement('div');
-      card.className = 'asset-card' + (isNew ? ' is-new' : '');
+      card.className = 'asset-card' + (isNew ? ' is-new' : '') + (locked ? ' is-locked' : '');
 
-      if (isNew) {
+      if (isNew && !locked) {
         const badge = document.createElement('span');
         badge.className = 'asset-new-badge';
         badge.textContent = 'NEW';
         card.appendChild(badge);
+      }
+
+      if (locked) {
+        const lockBadge = document.createElement('span');
+        lockBadge.className = 'asset-locked-badge';
+        lockBadge.textContent = '🔒 Locked';
+        card.appendChild(lockBadge);
       }
 
       if (isPreviewable(a.filename)) {
@@ -361,17 +384,40 @@ for (let i = 0; i < 100; i++) particles.push({
       name.textContent = a.filename;
       const meta = document.createElement('div');
       meta.className = 'asset-meta';
-      meta.textContent = formatSize(a.size);
-      const dl = document.createElement('a');
-      dl.className = 'asset-download';
-      dl.href = downloadUrl;
-      dl.textContent = '⬇ Download';
+      if (locked) {
+        const toGo = MEDIA_BANNER_UNLOCK_ORDERS - tierInfo.totalOrders;
+        meta.textContent = 'Unlocks after ' + MEDIA_BANNER_UNLOCK_ORDERS + ' orders — ' + toGo + ' to go';
+      } else {
+        meta.textContent = formatSize(a.size);
+      }
       body.appendChild(name);
       body.appendChild(meta);
-      body.appendChild(dl);
+      if (locked) {
+        const dl = document.createElement('span');
+        dl.className = 'asset-download is-disabled';
+        dl.textContent = '🔒 Locked';
+        body.appendChild(dl);
+      } else {
+        const dl = document.createElement('a');
+        dl.className = 'asset-download';
+        dl.href = downloadUrl;
+        dl.textContent = '⬇ Download';
+        body.appendChild(dl);
+      }
       card.appendChild(body);
       grid.appendChild(card);
     });
+  }
+
+  function loadTierInfo(token) {
+    fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        if (!data || !data.ok || data.status !== 'eligible') return;
+        tierInfo = { tier: data.tier || null, totalOrders: data.totalOrders || 0, loaded: true };
+        if (lastRenderedAssets) renderAssets(lastRenderedAssets, lastRenderedToken, lastRenderedVisit);
+      })
+      .catch(() => {});
   }
   let refreshProgressInterval = null;
   let refreshProgressResetTimer = null;
@@ -460,7 +506,7 @@ for (let i = 0; i < 100; i++) particles.push({
     refreshTimer = setInterval(() => {
       if (document.hidden) return;
       const t = loadToken();
-      if (t) loadAssets(t, 0, sessionLastVisit, true);
+      if (t) { loadAssets(t, 0, sessionLastVisit, true); loadTierInfo(t); }
     }, 30000);
   }
   document.addEventListener('visibilitychange', () => {
@@ -648,6 +694,7 @@ for (let i = 0; i < 100; i++) particles.push({
     show('stateLoading');
     sessionLastVisit = loadLastVisit();
     loadAssets(token, 1, sessionLastVisit, false, true);
+    loadTierInfo(token);
     startAutoRefresh();
   })();
 })();

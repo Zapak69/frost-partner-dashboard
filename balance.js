@@ -198,10 +198,11 @@ for (let i = 0; i < 100; i++) particles.push({
   function renderWallet(data) {
     lastData = data;
     renderCurrentRequestBanner(data);
-    const isPartnerPlus = data.percentage >= 30;
+    const TIER_LABELS = { media: 'Media', partner: 'Partner', partner_plus: 'Partner+' };
+    const TIER_CLASSES = { partner: ' partner', partner_plus: ' plus' };
     const tierBadge = document.getElementById('partnerTierBadge');
-    tierBadge.textContent = isPartnerPlus ? 'Partner+' : 'Partner';
-    tierBadge.className = 'tier-badge' + (isPartnerPlus ? ' plus' : '');
+    tierBadge.textContent = TIER_LABELS[data.tier] || 'Partner';
+    tierBadge.className = 'tier-badge' + (TIER_CLASSES[data.tier] || '');
     const wallet = data.walletSummary || {};
     document.getElementById('statEarnings').textContent = fmtMoney(wallet.earnings);
     document.getElementById('statAvailable').textContent = fmtMoney(wallet.available);

@@ -145,8 +145,23 @@
     transition: background 0.2s, border-color 0.2s;
   }
   .asset-download:hover { background: rgba(79,200,248,0.18); border-color: rgba(79,200,248,0.4); }
+  .asset-download.is-disabled {
+    background: var(--surface2); border-color: var(--border); color: var(--muted);
+    cursor: not-allowed; pointer-events: none;
+  }
+
+  .asset-card.is-locked { opacity: 0.55; }
+  .asset-card.is-locked .asset-preview,
+  .asset-card.is-locked .asset-preview-generic { filter: blur(6px) saturate(0.6); }
+  .asset-locked-badge {
+    position: absolute; top: 10px; left: 10px; z-index: 2;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+    padding: 4px 9px; border-radius: 980px;
+  }
 
   .empty-note { text-align: center; padding: 24px 20px 32px; color: var(--muted); font-size: 14.5px; }
+  .more-assets-note { text-align: center; padding: 20px 20px 0; color: var(--muted); font-size: 13px; }
 
   @keyframes skeletonPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.9; } }
   .skeleton-preview { width: 100%; aspect-ratio: 16 / 9; background: rgba(255,255,255,0.05); animation: skeletonPulse 1.8s ease-in-out infinite; }

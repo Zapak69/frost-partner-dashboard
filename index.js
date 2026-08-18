@@ -32,6 +32,11 @@ for (let i = 0; i < 100; i++) particles.push({
 
 (function () {
   const LITE_API_URL = 'https://script.google.com/macros/s/AKfycbxF57u1UNBsonktp5_2EseJtFkBZR0-CCxyazOGVUmEBrcwjU1-t6Us41gcrRqCsGcR/exec';
+  const BOT_API_URL = 'https://bot.frostclient.eu';
+  const RANKUP_NEXT_TIER = { media: 'partner', partner: 'partner_plus' };
+  const RANKUP_MIN_ORDERS = 5;
+  const RANKUP_PENDING_KEY = 'frostPartnerRankupPending';
+  const LAST_TIER_KEY = 'frostPartnerLastTier';
   const TOKEN_KEY = 'frostPartnerDashToken';
   const OAUTH_STATE_KEY = 'frostPartnerDashOauthState';
   const CACHE_KEY = 'frostPartnerDashCache';
@@ -337,6 +342,26 @@ for (let i = 0; i < 100; i++) particles.push({
     });
   }
 
+  function renderRankupBanner(data) {
+    const banner = document.getElementById('rankupBanner');
+    if (!banner) return;
+    const nextTier = RANKUP_NEXT_TIER[data.tier];
+    const totalOrders = data.totalOrders || 0;
+    let pending = false;
+    try { pending = localStorage.getItem(RANKUP_PENDING_KEY) === data.tier + '->' + nextTier; } catch (e) {}
+    if (!nextTier || totalOrders < RANKUP_MIN_ORDERS || pending) {
+      banner.style.display = 'none';
+      return;
+    }
+    const TIER_LABELS = { media: 'Media', partner: 'Partner', partner_plus: 'Partner+' };
+    banner.style.display = '';
+    banner.dataset.currentTier = data.tier;
+    banner.dataset.requestedTier = nextTier;
+    banner.dataset.totalOrders = String(totalOrders);
+    const textEl = document.getElementById('rankupBannerText');
+    if (textEl) textEl.textContent = "You've placed " + totalOrders + ' orders — you qualify to request a rank-up to ' + TIER_LABELS[nextTier] + '.';
+  }
+
   function renderDashboard(data) {
     lastData = data;
     document.getElementById('timeChartLoading').style.display = 'none';
@@ -344,10 +369,12 @@ for (let i = 0; i < 100; i++) particles.push({
     document.getElementById('partnerAvatar').src = avatarUrl(data.user);
     document.getElementById('partnerName').textContent = (data.user && (data.user.name || data.user.username)) || 'Partner';
     document.getElementById('partnerRate').textContent = data.percentage + '% commission on referred orders';
-    const isPartnerPlus = data.percentage >= 30;
+    const TIER_LABELS = { media: 'Media', partner: 'Partner', partner_plus: 'Partner+' };
+    const TIER_CLASSES = { partner: ' partner', partner_plus: ' plus' };
     const tierBadge = document.getElementById('partnerTierBadge');
-    tierBadge.textContent = isPartnerPlus ? 'Partner+' : 'Partner';
-    tierBadge.className = 'tier-badge' + (isPartnerPlus ? ' plus' : '');
+    tierBadge.textContent = TIER_LABELS[data.tier] || 'Partner';
+    tierBadge.className = 'tier-badge' + (TIER_CLASSES[data.tier] || '');
+    renderRankupBanner(data);
     document.getElementById('partnerCode').textContent = data.code || '—';
     document.getElementById('statTotalOrders').textContent = data.totalOrders != null ? data.totalOrders : '—';
     document.getElementById('statMonthOrders').textContent = data.currentMonthOrders != null ? data.currentMonthOrders : '—';
@@ -669,6 +696,15 @@ for (let i = 0; i < 100; i++) particles.push({
         statusMap[requestId] = item.status;
       });
       localStorage.setItem(WITHDRAW_STATUS_KEY, JSON.stringify(statusMap));
+
+      const TIER_LABELS = { media: 'Media', partner: 'Partner', partner_plus: 'Partner+' };
+      const TIER_RANK = { media: 0, partner: 1, partner_plus: 2 };
+      const prevTier = localStorage.getItem(LAST_TIER_KEY);
+      if (prevTier && data.tier && data.tier !== prevTier && (TIER_RANK[data.tier] || 0) > (TIER_RANK[prevTier] || 0)) {
+        showToast('🎉', 'Rank-up approved!', "You're now a " + (TIER_LABELS[data.tier] || data.tier) + ' partner.', null, 'View Dashboard', 'index');
+        try { localStorage.removeItem(RANKUP_PENDING_KEY); } catch (e3) {}
+      }
+      if (data.tier) localStorage.setItem(LAST_TIER_KEY, data.tier);
     } catch (e) {}
   }
 
@@ -980,6 +1016,90 @@ for (let i = 0; i < 100; i++) particles.push({
   document.getElementById('withdrawOpenBtn').addEventListener('click', () => {
     openQwModal();
   });
+
+  function openRankupModal() {
+    const banner = document.getElementById('rankupBanner');
+    if (!banner) return;
+    const TIER_LABELS = { media: 'Media', partner: 'Partner', partner_plus: 'Partner+' };
+    document.getElementById('rankupCurrentTier').textContent = TIER_LABELS[banner.dataset.currentTier] || '—';
+    document.getElementById('rankupRequestedTier').textContent = TIER_LABELS[banner.dataset.requestedTier] || '—';
+    document.getElementById('rankupTotalOrders').textContent = banner.dataset.totalOrders || '0';
+    document.getElementById('rankupFollowers').value = '';
+    document.getElementById('rankupProfileLink').value = '';
+    document.getElementById('rankupFormError').style.display = 'none';
+    document.getElementById('rankupOverlay').classList.add('open');
+  }
+  function closeRankupModal() {
+    document.getElementById('rankupOverlay').classList.remove('open');
+  }
+  const rankupOpenBtn = document.getElementById('rankupBannerBtn');
+  if (rankupOpenBtn) rankupOpenBtn.addEventListener('click', openRankupModal);
+  const rankupCloseBtn = document.getElementById('rankupCloseBtn');
+  if (rankupCloseBtn) rankupCloseBtn.addEventListener('click', closeRankupModal);
+  const rankupOverlay = document.getElementById('rankupOverlay');
+  if (rankupOverlay) {
+    rankupOverlay.addEventListener('click', function (e) { if (e.target === this) closeRankupModal(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && rankupOverlay.classList.contains('open')) closeRankupModal();
+    });
+  }
+  const rankupSubmitBtn = document.getElementById('rankupSubmitBtn');
+  if (rankupSubmitBtn) {
+    rankupSubmitBtn.addEventListener('click', function () {
+      if (this.disabled) return;
+      const token = loadToken();
+      if (!token) { closeRankupModal(); return; }
+      const banner = document.getElementById('rankupBanner');
+      const currentTier = banner.dataset.currentTier;
+      const requestedTier = banner.dataset.requestedTier;
+      const followers = parseInt(document.getElementById('rankupFollowers').value, 10) || 0;
+      const profileLink = document.getElementById('rankupProfileLink').value.trim();
+      const errEl = document.getElementById('rankupFormError');
+      if (followers <= 0 || !profileLink) {
+        errEl.style.display = 'block';
+        errEl.textContent = 'Please fill in your follower count and profile link.';
+        return;
+      }
+      this.disabled = true;
+      fetch(BOT_API_URL + '/partner-rankup-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: token, currentTier: currentTier, requestedTier: requestedTier,
+          followers: followers, profileLink: profileLink,
+          totalOrders: parseInt(banner.dataset.totalOrders, 10) || 0
+        })
+      })
+        .then(r => r.json())
+        .then(data => {
+          rankupSubmitBtn.disabled = false;
+          if (data && data.ok) {
+            try { localStorage.setItem(RANKUP_PENDING_KEY, currentTier + '->' + requestedTier); } catch (e) {}
+            closeRankupModal();
+            showToast('📨', 'Rank-up request sent', "We'll review it and get back to you on Discord.", null, 'View Dashboard', 'index');
+            renderRankupBanner(lastData);
+            return;
+          }
+          errEl.style.display = 'block';
+          if (data && data.error === 'already_pending') {
+            errEl.textContent = 'You already have a pending rank-up request.';
+          } else if (data && data.error === 'not_member') {
+            errEl.textContent = "We couldn't find you on the Frost Discord server.";
+          } else if (data && data.error === 'token_expired') {
+            clearToken();
+            closeRankupModal();
+            show('stateLogin');
+          } else {
+            errEl.textContent = "Couldn't submit your request. Please try again.";
+          }
+        })
+        .catch(() => {
+          rankupSubmitBtn.disabled = false;
+          errEl.style.display = 'block';
+          errEl.textContent = 'Network error. Please try again.';
+        });
+    });
+  }
 
   function isInternalDashboardLink(href) {
     if (!href) return false;
