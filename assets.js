@@ -328,7 +328,7 @@ for (let i = 0; i < 100; i++) particles.push({
   // There's no real asset-type field anywhere in the system (assets are just files in a
   // per-partner folder - see BANNERS_DIR in bot.js), so "is this the banner asset" is a simple
   // filename convention instead of new backend infrastructure.
-  const MEDIA_BANNER_UNLOCK_ORDERS = 3;
+  const MEDIA_BANNER_UNLOCK_ORDERS = 5;
   let tierInfo = { tier: null, totalOrders: 0, loaded: false };
   let lastRenderedAssets = null, lastRenderedToken = null, lastRenderedVisit = null;
 
@@ -391,8 +391,7 @@ for (let i = 0; i < 100; i++) particles.push({
       const meta = document.createElement('div');
       meta.className = 'asset-meta';
       if (locked) {
-        const toGo = MEDIA_BANNER_UNLOCK_ORDERS - tierInfo.totalOrders;
-        meta.textContent = 'Unlocks after ' + MEDIA_BANNER_UNLOCK_ORDERS + ' orders — ' + toGo + ' to go';
+        meta.textContent = Math.min(tierInfo.totalOrders, MEDIA_BANNER_UNLOCK_ORDERS) + '/' + MEDIA_BANNER_UNLOCK_ORDERS + ' orders to unlock';
       } else {
         meta.textContent = formatSize(a.size);
       }
