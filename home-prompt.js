@@ -8,7 +8,9 @@
   if (!isMobileDevice() || isStandaloneMode()) return;
 
   const DISMISSED_KEY = 'frostDashAddHomeScreenDismissed';
-  try { if (localStorage.getItem(DISMISSED_KEY)) return; } catch (e) {}
+  try {
+    if (localStorage.getItem(DISMISSED_KEY)) return;
+  } catch (e) {}
 
   function escapeHtml(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -40,20 +42,28 @@
       '<button type="button" class="modal-close" id="addHomeScreenCloseBtn" aria-label="Close">✕</button>' +
       '<div class="modal-title">Add to your Home Screen</div>' +
       '<p class="withdraw-sub">Install this dashboard as an app for quick access and to enable notifications.</p>' +
-      '<ol class="home-screen-steps">' + steps.map(function (s) { return '<li><span>' + escapeHtml(s) + '</span></li>'; }).join('') + '</ol>' +
+      '<ol class="home-screen-steps">' + steps.map(function (s) {
+        return '<li><span>' + escapeHtml(s) + '</span></li>';
+      }).join('') + '</ol>' +
       '<button type="button" class="withdraw-btn" id="addHomeScreenGotItBtn">Got it</button>' +
     '</div>';
   document.body.appendChild(overlay);
 
   function dismiss() {
     overlay.classList.remove('open');
-    try { localStorage.setItem(DISMISSED_KEY, '1'); } catch (e) {}
+    try {
+      localStorage.setItem(DISMISSED_KEY, '1');
+    } catch (e) {}
   }
   document.getElementById('addHomeScreenGotItBtn').addEventListener('click', dismiss);
   document.getElementById('addHomeScreenCloseBtn').addEventListener('click', dismiss);
-  overlay.addEventListener('click', function (e) { if (e.target === overlay) dismiss(); });
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) dismiss();
+  });
 
   window.addEventListener('load', function () {
-    setTimeout(function () { overlay.classList.add('open'); }, 500);
+    setTimeout(function () {
+      overlay.classList.add('open');
+    }, 500);
   });
 })();

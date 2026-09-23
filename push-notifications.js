@@ -9,7 +9,9 @@
   if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
 
   let token = '';
-  try { token = localStorage.getItem('frostPartnerDashToken') || ''; } catch (e) {}
+  try {
+      token = localStorage.getItem('frostPartnerDashToken') || '';
+  } catch (e) {}
   if (!token) return;
 
   function callPush(action, extra) {
@@ -17,7 +19,11 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(Object.assign({ token: token }, extra || {}))
-    }).then(function (r) { return r.json(); }).catch(function () { return null; });
+    }).then(function (r) {
+        return r.json();
+    }).catch(function () {
+        return null;
+    });
   }
 
   function urlBase64ToUint8Array(base64String) {
@@ -57,15 +63,21 @@
     document.body.appendChild(overlay);
     function close() {
       overlay.classList.remove('open');
-      setTimeout(function () { overlay.remove(); }, 300);
+      setTimeout(function () {
+          overlay.remove();
+      }, 300);
     }
     overlay.querySelector('.modal-close').addEventListener('click', close);
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) close();
+    });
     overlay.querySelector('.withdraw-btn').addEventListener('click', function () {
       close();
       onEnable();
     });
-    setTimeout(function () { overlay.classList.add('open'); }, 50);
+    setTimeout(function () {
+        overlay.classList.add('open');
+    }, 50);
   }
 
   window.addEventListener('load', function () {

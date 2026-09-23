@@ -23,7 +23,10 @@ for (let i = 0; i < 100; i++) particles.push({
     particleCtx.fillStyle = `rgba(168,230,248,${p.opacity})`;
     particleCtx.fill();
     p.y += p.speed; p.x += p.drift;
-    if (p.y > particleH + 10) { p.y = -10; p.x = Math.random() * particleW; }
+    if (p.y > particleH + 10) {
+        p.y = -10;
+        p.x = Math.random() * particleW;
+    }
     if (p.x > particleW + 10) p.x = -10;
     if (p.x < -10) p.x = particleW + 10;
   }
@@ -39,10 +42,14 @@ for (let i = 0; i < 100; i++) particles.push({
     try {
       const v = localStorage.getItem(LAST_VISIT_KEY);
       return v ? parseInt(v, 10) : null;
-    } catch (e) { return null; }
+    } catch (e) {
+        return null;
+    }
   }
   function saveLastVisitNow() {
-    try { localStorage.setItem(LAST_VISIT_KEY, String(Date.now())); } catch (e) {}
+    try {
+        localStorage.setItem(LAST_VISIT_KEY, String(Date.now()));
+    } catch (e) {}
   }
 
   const states = ['stateLoading', 'stateError', 'stateData'];
@@ -64,10 +71,16 @@ for (let i = 0; i < 100; i++) particles.push({
   }
 
   function loadToken() {
-    try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+    try {
+        return localStorage.getItem(TOKEN_KEY) || '';
+    } catch (e) {
+        return '';
+    }
   }
   function clearToken() {
-    try { localStorage.removeItem(TOKEN_KEY); } catch (e) {}
+    try {
+        localStorage.removeItem(TOKEN_KEY);
+    } catch (e) {}
   }
 
   function showError(msg) {
@@ -83,10 +96,16 @@ for (let i = 0; i < 100; i++) particles.push({
   const NOTIFICATIONS_KEY = 'frostPartnerNotifications';
   const MAX_NOTIFICATIONS = 40;
   function loadNotifications() {
-    try { return JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY) || '[]'); } catch (e) { return []; }
+    try {
+        return JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY) || '[]');
+    } catch (e) {
+        return [];
+    }
   }
   function saveNotifications(list) {
-    try { localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(list)); } catch (e) {}
+    try {
+        localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(list));
+    } catch (e) {}
   }
   function addNotification(icon, title, desc, actionLabel, actionHref) {
     const list = loadNotifications();
@@ -102,15 +121,24 @@ for (let i = 0; i < 100; i++) particles.push({
     if (notifPanelOpen) renderNotifPanel();
   }
   function removeNotification(id) {
-    saveNotifications(loadNotifications().filter(function (n) { return n.id !== id; }));
+    saveNotifications(loadNotifications().filter(function (n) {
+        return n.id !== id;
+    }));
     updateNotifBadge();
   }
   function updateNotifBadge() {
     const badge = document.getElementById('notifBadge');
     if (!badge) return;
-    const unread = loadNotifications().filter(function (n) { return !n.read; }).length;
-    if (unread > 0) { badge.textContent = unread > 99 ? '99+' : String(unread); badge.style.display = 'flex'; }
-    else { badge.style.display = 'none'; }
+    const unread = loadNotifications().filter(function (n) {
+        return !n.read;
+    }).length;
+    if (unread > 0) {
+        badge.textContent = unread > 99 ? '99+' : String(unread);
+        badge.style.display = 'flex';
+    }
+    else {
+        badge.style.display = 'none';
+    }
   }
   function formatNotifTime(ts) {
     const d = new Date(ts);
@@ -142,15 +170,22 @@ for (let i = 0; i < 100; i++) particles.push({
       state.el.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
       state.el.style.transform = 'translateX(-100%)';
       state.el.style.opacity = '0';
-      setTimeout(function () { removeNotification(state.id); renderNotifPanel(); }, 200);
+      setTimeout(function () {
+          removeNotification(state.id);
+          renderNotifPanel();
+      }, 200);
     } else {
       state.el.style.transition = 'transform 0.2s ease, background 0.2s ease';
       state.el.style.transform = 'translateX(0)';
       state.el.style.background = '';
     }
   }
-  document.addEventListener('mousemove', function (e) { notifDragMove(e.clientX); });
-  document.addEventListener('touchmove', function (e) { if (notifDrag) notifDragMove(e.touches[0].clientX); }, { passive: true });
+  document.addEventListener('mousemove', function (e) {
+      notifDragMove(e.clientX);
+  });
+  document.addEventListener('touchmove', function (e) {
+      if (notifDrag) notifDragMove(e.touches[0].clientX);
+  }, { passive: true });
   document.addEventListener('mouseup', notifDragEnd);
   document.addEventListener('touchend', notifDragEnd);
   function renderNotifPanel() {
@@ -233,10 +268,15 @@ for (let i = 0; i < 100; i++) particles.push({
   }
   const notifBellBtn = document.getElementById('notifBellBtn');
   if (notifBellBtn) {
-    notifBellBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleNotifPanel(); });
+    notifBellBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleNotifPanel();
+    });
     document.getElementById('notifMarkReadBtn').addEventListener('click', function () {
       const list = loadNotifications();
-      list.forEach(function (n) { n.read = true; });
+      list.forEach(function (n) {
+          n.read = true;
+      });
       saveNotifications(list);
       updateNotifBadge();
       renderNotifPanel();
@@ -246,7 +286,9 @@ for (let i = 0; i < 100; i++) particles.push({
       updateNotifBadge();
       renderNotifPanel();
     });
-    window.addEventListener('resize', function () { if (notifPanelOpen) positionNotifPanel(); });
+    window.addEventListener('resize', function () {
+        if (notifPanelOpen) positionNotifPanel();
+    });
     document.addEventListener('click', function (e) {
       const panel = document.getElementById('notifPanel');
       if (notifPanelOpen && !panel.contains(e.target) && e.target !== notifBellBtn && !notifBellBtn.contains(e.target)) {
@@ -289,7 +331,12 @@ for (let i = 0; i < 100; i++) particles.push({
     el.appendChild(body);
     el.appendChild(closeBtn);
     el.appendChild(progress);
-    const remove = function () { el.classList.add('hide'); setTimeout(function () { el.remove(); }, 250); };
+    const remove = function () {
+        el.classList.add('hide');
+        setTimeout(function () {
+            el.remove();
+        }, 250);
+    };
     closeBtn.addEventListener('click', remove);
     stack.appendChild(el);
     setTimeout(remove, duration);
@@ -466,8 +513,15 @@ for (let i = 0; i < 100; i++) particles.push({
       .then(data => {
         if (showProgress) hideRefreshProgress();
         if (!data || !data.ok) {
-          if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1, lastVisit, isBackground, showProgress); return; }
-          if (data && data.error === 'forbidden') { clearToken(); window.location.href = 'index'; return; }
+          if (retriesLeft > 0) {
+              loadAssets(token, retriesLeft - 1, lastVisit, isBackground, showProgress);
+              return;
+          }
+          if (data && data.error === 'forbidden') {
+              clearToken();
+              window.location.href = 'index';
+              return;
+          }
           if (!isBackground) showError('Could not load your assets. Please try again.');
           return;
         }
@@ -494,14 +548,20 @@ for (let i = 0; i < 100; i++) particles.push({
       })
       .catch(() => {
         if (showProgress) hideRefreshProgress();
-        if (retriesLeft > 0) { loadAssets(token, retriesLeft - 1, lastVisit, isBackground, showProgress); return; }
+        if (retriesLeft > 0) {
+            loadAssets(token, retriesLeft - 1, lastVisit, isBackground, showProgress);
+            return;
+        }
         if (!isBackground) showError('Network error while contacting the server. Please try again.');
       });
   }
 
   document.getElementById('retryBtn').addEventListener('click', () => {
     const token = loadToken();
-    if (!token) { window.location.href = 'index'; return; }
+    if (!token) {
+        window.location.href = 'index';
+        return;
+    }
     show('stateLoading');
     loadAssets(token, 1, loadLastVisit(), false, true);
   });
@@ -512,7 +572,10 @@ for (let i = 0; i < 100; i++) particles.push({
     refreshTimer = setInterval(() => {
       if (document.hidden) return;
       const t = loadToken();
-      if (t) { loadAssets(t, 0, sessionLastVisit, true); loadTierInfo(t); }
+      if (t) {
+          loadAssets(t, 0, sessionLastVisit, true);
+          loadTierInfo(t);
+      }
     }, 30000);
   }
   document.addEventListener('visibilitychange', () => {
@@ -535,10 +598,14 @@ for (let i = 0; i < 100; i++) particles.push({
     return (qwData && qwData.minWithdraw) || QW_DEFAULT_MIN;
   }
   function qwShowState(id) {
-    ['qwStateLoading', 'qwStateForm', 'qwStateSubmitting', 'qwStateDone'].forEach(function (s) { document.getElementById(s).classList.toggle('active', s === id); });
+    ['qwStateLoading', 'qwStateForm', 'qwStateSubmitting', 'qwStateDone'].forEach(function (s) {
+        document.getElementById(s).classList.toggle('active', s === id);
+    });
   }
   function qwShowStep(id) {
-    ['qwStepAmount', 'qwStepDetails'].forEach(function (s) { document.getElementById(s).classList.toggle('active', s === id); });
+    ['qwStepAmount', 'qwStepDetails'].forEach(function (s) {
+        document.getElementById(s).classList.toggle('active', s === id);
+    });
   }
   function qwResetForm() {
     document.getElementById('qwAmount').value = '';
@@ -578,8 +645,12 @@ for (let i = 0; i < 100; i++) particles.push({
     document.getElementById('qwSubmitBtn').disabled = !valid;
   }
   document.getElementById('qwAmount').addEventListener('input', qwUpdateContinueEnabled);
-  ['qwEmail1', 'qwEmail2'].forEach(function (id) { document.getElementById(id).addEventListener('input', qwUpdateSubmitEnabled); });
-  ['qwConfirmAmount', 'qwConfirmEmail'].forEach(function (id) { document.getElementById(id).addEventListener('change', qwUpdateSubmitEnabled); });
+  ['qwEmail1', 'qwEmail2'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', qwUpdateSubmitEnabled);
+  });
+  ['qwConfirmAmount', 'qwConfirmEmail'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', qwUpdateSubmitEnabled);
+  });
   document.getElementById('qwMaxBtn').addEventListener('click', function () {
     document.getElementById('qwAmount').value = qwAvailable().amount.toFixed(2);
     qwUpdateContinueEnabled();
@@ -592,19 +663,28 @@ for (let i = 0; i < 100; i++) particles.push({
     input.value = next.toFixed(2);
     qwUpdateContinueEnabled();
   }
-  document.getElementById('qwStepUp').addEventListener('click', function () { qwStep(0.01); });
-  document.getElementById('qwStepDown').addEventListener('click', function () { qwStep(-0.01); });
+  document.getElementById('qwStepUp').addEventListener('click', function () {
+      qwStep(0.01);
+  });
+  document.getElementById('qwStepDown').addEventListener('click', function () {
+      qwStep(-0.01);
+  });
   document.getElementById('qwContinueBtn').addEventListener('click', function () {
     if (this.disabled) return;
     qwShowStep('qwStepDetails');
   });
-  document.getElementById('qwBackBtn').addEventListener('click', function () { qwShowStep('qwStepAmount'); });
+  document.getElementById('qwBackBtn').addEventListener('click', function () {
+      qwShowStep('qwStepAmount');
+  });
 
   function openQwModal() {
     document.getElementById('qwOverlay').classList.add('open');
     qwShowState('qwStateLoading');
     const token = loadToken();
-    if (!token) { closeQwModal(); return; }
+    if (!token) {
+        closeQwModal();
+        return;
+    }
     fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
@@ -617,7 +697,9 @@ for (let i = 0; i < 100; i++) particles.push({
           closeQwModal();
         }
       })
-      .catch(function () { closeQwModal(); });
+      .catch(function () {
+          closeQwModal();
+      });
   }
   function closeQwModal() {
     document.getElementById('qwOverlay').classList.remove('open');
@@ -635,7 +717,10 @@ for (let i = 0; i < 100; i++) particles.push({
   document.getElementById('qwSubmitBtn').addEventListener('click', function () {
     if (this.disabled) return;
     const token = loadToken();
-    if (!token) { closeQwModal(); return; }
+    if (!token) {
+        closeQwModal();
+        return;
+    }
     const amount = parseFloat(document.getElementById('qwAmount').value);
     const email = document.getElementById('qwEmail1').value.trim();
     qwShowState('qwStateSubmitting');
@@ -691,12 +776,17 @@ for (let i = 0; i < 100; i++) particles.push({
     e.preventDefault();
     const el = document.getElementById('pageTransition');
     if (el) el.classList.remove('hide');
-    setTimeout(function () { window.location.href = a.href; }, 120);
+    setTimeout(function () {
+        window.location.href = a.href;
+    }, 120);
   });
 
   (function init() {
     const token = loadToken();
-    if (!token) { window.location.href = 'index'; return; }
+    if (!token) {
+        window.location.href = 'index';
+        return;
+    }
     show('stateLoading');
     sessionLastVisit = loadLastVisit();
     loadAssets(token, 1, sessionLastVisit, false, true);

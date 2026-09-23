@@ -23,7 +23,10 @@ for (let i = 0; i < 100; i++) particles.push({
     particleCtx.fillStyle = `rgba(168,230,248,${p.opacity})`;
     particleCtx.fill();
     p.y += p.speed; p.x += p.drift;
-    if (p.y > particleH + 10) { p.y = -10; p.x = Math.random() * particleW; }
+    if (p.y > particleH + 10) {
+        p.y = -10;
+        p.x = Math.random() * particleW;
+    }
     if (p.x > particleW + 10) p.x = -10;
     if (p.x < -10) p.x = particleW + 10;
   }
@@ -77,19 +80,35 @@ for (let i = 0; i < 100; i++) particles.push({
   }
 
   function loadToken() {
-    try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+    try {
+        return localStorage.getItem(TOKEN_KEY) || '';
+    } catch (e) {
+        return '';
+    }
   }
   function saveToken(t) {
-    try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {}
+    try {
+        localStorage.setItem(TOKEN_KEY, t);
+    } catch (e) {}
   }
   function clearToken() {
-    try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(CACHE_KEY); } catch (e) {}
+    try {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(CACHE_KEY);
+    } catch (e) {}
   }
   function saveCache(data) {
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (e) {}
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    } catch (e) {}
   }
   function loadCache() {
-    try { const raw = localStorage.getItem(CACHE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
   }
 
   function showError(msg) {
@@ -150,12 +169,36 @@ for (let i = 0; i < 100; i++) particles.push({
     const HOUR = 60 * 60 * 1000, DAY = 24 * HOUR;
     let bucketMs, startTime, tooltipFn;
 
-    if (range === '1h') { bucketMs = 5 * 60 * 1000; startTime = now - HOUR; tooltipFn = formatClock; }
-    else if (range === '12h') { bucketMs = 30 * 60 * 1000; startTime = now - 12 * HOUR; tooltipFn = formatClock; }
-    else if (range === '24h') { bucketMs = HOUR; startTime = now - 24 * HOUR; tooltipFn = formatClock; }
-    else if (range === 'week') { bucketMs = DAY; startTime = now - 7 * DAY; tooltipFn = formatDateShort; }
-    else if (range === 'month') { bucketMs = DAY; startTime = now - 30 * DAY; tooltipFn = formatDateShort; }
-    else if (range === 'year') { bucketMs = 30 * DAY; startTime = now - 365 * DAY; tooltipFn = formatDateShort; }
+    if (range === '1h') {
+        bucketMs = 5 * 60 * 1000;
+        startTime = now - HOUR;
+        tooltipFn = formatClock;
+    }
+    else if (range === '12h') {
+        bucketMs = 30 * 60 * 1000;
+        startTime = now - 12 * HOUR;
+        tooltipFn = formatClock;
+    }
+    else if (range === '24h') {
+        bucketMs = HOUR;
+        startTime = now - 24 * HOUR;
+        tooltipFn = formatClock;
+    }
+    else if (range === 'week') {
+        bucketMs = DAY;
+        startTime = now - 7 * DAY;
+        tooltipFn = formatDateShort;
+    }
+    else if (range === 'month') {
+        bucketMs = DAY;
+        startTime = now - 30 * DAY;
+        tooltipFn = formatDateShort;
+    }
+    else if (range === 'year') {
+        bucketMs = 30 * DAY;
+        startTime = now - 365 * DAY;
+        tooltipFn = formatDateShort;
+    }
     else {
       const earliest = timestamps.length ? timestamps[0] : now - DAY;
       bucketMs = Math.max(DAY, (now - earliest) / 24);
@@ -201,8 +244,12 @@ for (let i = 0; i < 100; i++) particles.push({
     const xMin = Math.min.apply(null, xs), xMax = Math.max.apply(null, xs);
     const yMax = niceCeil(Math.max.apply(null, points.map(p => p.value)) || 1);
 
-    function xPix(t) { return PAD_L + (xMax === xMin ? plotW / 2 : (t - xMin) / (xMax - xMin) * plotW); }
-    function yPix(v) { return PAD_T + plotH - (v / yMax) * plotH; }
+    function xPix(t) {
+        return PAD_L + (xMax === xMin ? plotW / 2 : (t - xMin) / (xMax - xMin) * plotW);
+    }
+    function yPix(v) {
+        return PAD_T + plotH - (v / yMax) * plotH;
+    }
 
     const GRID_STEPS = 4;
     for (let i = 0; i <= GRID_STEPS; i++) {
@@ -258,7 +305,10 @@ for (let i = 0; i < 100; i++) particles.push({
       let nearest = points[0], nearestDist = Infinity;
       for (const p of points) {
         const dist = Math.abs(xPix(p.t) - mouseX);
-        if (dist < nearestDist) { nearest = p; nearestDist = dist; }
+        if (dist < nearestDist) {
+            nearest = p;
+            nearestDist = dist;
+        }
       }
       const px = xPix(nearest.t), py = yPix(nearest.value);
       crosshair.setAttribute('x1', px); crosshair.setAttribute('x2', px); crosshair.setAttribute('opacity', 1);
@@ -354,7 +404,9 @@ for (let i = 0; i < 100; i++) particles.push({
     const nextTier = RANKUP_NEXT_TIER[data.tier];
     const totalOrders = data.totalOrders || 0;
     let pending = false;
-    try { pending = localStorage.getItem(RANKUP_PENDING_KEY) === data.tier + '->' + nextTier; } catch (e) {}
+    try {
+        pending = localStorage.getItem(RANKUP_PENDING_KEY) === data.tier + '->' + nextTier;
+    } catch (e) {}
     if (!nextTier || totalOrders < RANKUP_MIN_ORDERS || pending) {
       banner.style.display = 'none';
       return;
@@ -448,10 +500,16 @@ for (let i = 0; i < 100; i++) particles.push({
   const NOTIFICATIONS_KEY = 'frostPartnerNotifications';
   const MAX_NOTIFICATIONS = 40;
   function loadNotifications() {
-    try { return JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY) || '[]'); } catch (e) { return []; }
+    try {
+        return JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY) || '[]');
+    } catch (e) {
+        return [];
+    }
   }
   function saveNotifications(list) {
-    try { localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(list)); } catch (e) {}
+    try {
+        localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(list));
+    } catch (e) {}
   }
   function addNotification(icon, title, desc, actionLabel, actionHref) {
     const list = loadNotifications();
@@ -467,15 +525,24 @@ for (let i = 0; i < 100; i++) particles.push({
     if (notifPanelOpen) renderNotifPanel();
   }
   function removeNotification(id) {
-    saveNotifications(loadNotifications().filter(function (n) { return n.id !== id; }));
+    saveNotifications(loadNotifications().filter(function (n) {
+        return n.id !== id;
+    }));
     updateNotifBadge();
   }
   function updateNotifBadge() {
     const badge = document.getElementById('notifBadge');
     if (!badge) return;
-    const unread = loadNotifications().filter(function (n) { return !n.read; }).length;
-    if (unread > 0) { badge.textContent = unread > 99 ? '99+' : String(unread); badge.style.display = 'flex'; }
-    else { badge.style.display = 'none'; }
+    const unread = loadNotifications().filter(function (n) {
+        return !n.read;
+    }).length;
+    if (unread > 0) {
+        badge.textContent = unread > 99 ? '99+' : String(unread);
+        badge.style.display = 'flex';
+    }
+    else {
+        badge.style.display = 'none';
+    }
   }
   function formatNotifTime(ts) {
     const d = new Date(ts);
@@ -507,15 +574,22 @@ for (let i = 0; i < 100; i++) particles.push({
       state.el.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
       state.el.style.transform = 'translateX(-100%)';
       state.el.style.opacity = '0';
-      setTimeout(function () { removeNotification(state.id); renderNotifPanel(); }, 200);
+      setTimeout(function () {
+          removeNotification(state.id);
+          renderNotifPanel();
+      }, 200);
     } else {
       state.el.style.transition = 'transform 0.2s ease, background 0.2s ease';
       state.el.style.transform = 'translateX(0)';
       state.el.style.background = '';
     }
   }
-  document.addEventListener('mousemove', function (e) { notifDragMove(e.clientX); });
-  document.addEventListener('touchmove', function (e) { if (notifDrag) notifDragMove(e.touches[0].clientX); }, { passive: true });
+  document.addEventListener('mousemove', function (e) {
+      notifDragMove(e.clientX);
+  });
+  document.addEventListener('touchmove', function (e) {
+      if (notifDrag) notifDragMove(e.touches[0].clientX);
+  }, { passive: true });
   document.addEventListener('mouseup', notifDragEnd);
   document.addEventListener('touchend', notifDragEnd);
   function renderNotifPanel() {
@@ -598,10 +672,15 @@ for (let i = 0; i < 100; i++) particles.push({
   }
   const notifBellBtn = document.getElementById('notifBellBtn');
   if (notifBellBtn) {
-    notifBellBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleNotifPanel(); });
+    notifBellBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleNotifPanel();
+    });
     document.getElementById('notifMarkReadBtn').addEventListener('click', function () {
       const list = loadNotifications();
-      list.forEach(function (n) { n.read = true; });
+      list.forEach(function (n) {
+          n.read = true;
+      });
       saveNotifications(list);
       updateNotifBadge();
       renderNotifPanel();
@@ -611,7 +690,9 @@ for (let i = 0; i < 100; i++) particles.push({
       updateNotifBadge();
       renderNotifPanel();
     });
-    window.addEventListener('resize', function () { if (notifPanelOpen) positionNotifPanel(); });
+    window.addEventListener('resize', function () {
+        if (notifPanelOpen) positionNotifPanel();
+    });
     document.addEventListener('click', function (e) {
       const panel = document.getElementById('notifPanel');
       if (notifPanelOpen && !panel.contains(e.target) && e.target !== notifBellBtn && !notifBellBtn.contains(e.target)) {
@@ -653,7 +734,12 @@ for (let i = 0; i < 100; i++) particles.push({
     el.appendChild(body);
     el.appendChild(closeBtn);
     el.appendChild(progress);
-    const remove = function () { el.classList.add('hide'); setTimeout(function () { el.remove(); }, 250); };
+    const remove = function () {
+        el.classList.add('hide');
+        setTimeout(function () {
+            el.remove();
+        }, 250);
+    };
     closeBtn.addEventListener('click', remove);
     stack.appendChild(el);
     setTimeout(remove, duration);
@@ -669,7 +755,9 @@ for (let i = 0; i < 100; i++) particles.push({
         const lastSeenRaw = localStorage.getItem(LAST_ORDER_TS_KEY);
         const lastSeen = lastSeenRaw ? parseInt(lastSeenRaw, 10) : null;
         if (lastSeen != null) {
-          const newOnes = orders.filter(function (o) { return o.timestamp > lastSeen; });
+          const newOnes = orders.filter(function (o) {
+              return o.timestamp > lastSeen;
+          });
           if (newOnes.length === 1) {
             showToast('🎉', 'New order!', '+' + newOnes[0].commission.toFixed(2) + ' ' + newOnes[0].currency.toUpperCase() + ' commission earned.', null, 'View Dashboard', 'index');
           } else if (newOnes.length > 1) {
@@ -688,7 +776,9 @@ for (let i = 0; i < 100; i++) particles.push({
         }
       });
       let statusMap = {};
-      try { statusMap = JSON.parse(localStorage.getItem(WITHDRAW_STATUS_KEY) || '{}'); } catch (e2) {}
+      try {
+          statusMap = JSON.parse(localStorage.getItem(WITHDRAW_STATUS_KEY) || '{}');
+      } catch (e2) {}
       Object.keys(dedupedByRequestId).forEach(function (requestId) {
         const item = dedupedByRequestId[requestId];
         const prev = statusMap[requestId];
@@ -709,7 +799,9 @@ for (let i = 0; i < 100; i++) particles.push({
       const prevTier = localStorage.getItem(LAST_TIER_KEY);
       if (prevTier && data.tier && data.tier !== prevTier && (TIER_RANK[data.tier] || 0) > (TIER_RANK[prevTier] || 0)) {
         showToast('🎉', 'Rank-up approved!', "You're now a " + (TIER_LABELS[data.tier] || data.tier) + ' partner.', null, 'View Dashboard', 'index');
-        try { localStorage.removeItem(RANKUP_PENDING_KEY); } catch (e3) {}
+        try {
+            localStorage.removeItem(RANKUP_PENDING_KEY);
+        } catch (e3) {}
       }
       if (data.tier) localStorage.setItem(LAST_TIER_KEY, data.tier);
     } catch (e) {}
@@ -719,7 +811,10 @@ for (let i = 0; i < 100; i++) particles.push({
   function updateLastUpdatedText() {
     const el = document.getElementById('lastUpdatedText');
     if (!el) return;
-    if (!lastUpdatedAt) { el.textContent = ''; return; }
+    if (!lastUpdatedAt) {
+        el.textContent = '';
+        return;
+    }
     const secs = Math.round((Date.now() - lastUpdatedAt) / 1000);
     if (secs < 10) el.textContent = 'Updated just now';
     else if (secs < 60) el.textContent = 'Updated ' + secs + 's ago';
@@ -729,12 +824,24 @@ for (let i = 0; i < 100; i++) particles.push({
 
   function handleResponse(data) {
     if (!data || !data.ok) {
-      if (data && data.error === 'token_expired') { clearToken(); show('stateLogin'); return; }
+      if (data && data.error === 'token_expired') {
+          clearToken();
+          show('stateLogin');
+          return;
+      }
       showError((data && data.detail) || "Couldn't verify your account. Please try again.");
       return;
     }
-    if (data.status === 'not_member') { clearToken(); show('stateNotMember'); return; }
-    if (data.status === 'not_partner') { clearToken(); show('stateNotPartner'); return; }
+    if (data.status === 'not_member') {
+        clearToken();
+        show('stateNotMember');
+        return;
+    }
+    if (data.status === 'not_partner') {
+        clearToken();
+        show('stateNotPartner');
+        return;
+    }
     if (data.status === 'not_set_up') {
       if (data.partnerDashToken) saveToken(data.partnerDashToken);
       show('stateNotSetUp');
@@ -797,8 +904,15 @@ for (let i = 0; i < 100; i++) particles.push({
     if (showProgress) showRefreshProgress();
     return fetch(LITE_API_URL + '?action=partnerDashCheck&token=' + encodeURIComponent(token), { cache: 'no-store' })
       .then(r => r.json())
-      .then(data => { if (showProgress) hideRefreshProgress(); if (!isBackground || (data && data.ok)) handleResponse(data); return data; })
-      .catch(() => { if (showProgress) hideRefreshProgress(); if (!isBackground) showError('Network error while contacting the server. Please try again.'); });
+      .then(data => {
+          if (showProgress) hideRefreshProgress();
+          if (!isBackground || (data && data.ok)) handleResponse(data);
+          return data;
+      })
+      .catch(() => {
+          if (showProgress) hideRefreshProgress();
+          if (!isBackground) showError('Network error while contacting the server. Please try again.');
+      });
   }
   let refreshTimer = null;
   function startAutoRefresh() {
@@ -829,7 +943,9 @@ for (let i = 0; i < 100; i++) particles.push({
 
   const loginBtn = document.getElementById('loginBtn');
   function startLogin() {
-    try { fetch(LITE_API_URL + '?action=partnerDashConfig', { cache: 'no-store', keepalive: true }); } catch (e) {}
+    try {
+        fetch(LITE_API_URL + '?action=partnerDashConfig', { cache: 'no-store', keepalive: true });
+    } catch (e) {}
     let csrfState = '';
     try {
       const buf = new Uint8Array(16);
@@ -869,7 +985,10 @@ for (let i = 0; i < 100; i++) particles.push({
       const original = btn.textContent;
       btn.textContent = 'Copied!';
       btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1400);
+      setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+      }, 1400);
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(code).then(done).catch(() => {});
@@ -883,10 +1002,14 @@ for (let i = 0; i < 100; i++) particles.push({
     return (lastData && lastData.minWithdraw) || QW_DEFAULT_MIN;
   }
   function qwShowState(id) {
-    ['qwStateForm', 'qwStateSubmitting', 'qwStateDone'].forEach(function (s) { document.getElementById(s).classList.toggle('active', s === id); });
+    ['qwStateForm', 'qwStateSubmitting', 'qwStateDone'].forEach(function (s) {
+        document.getElementById(s).classList.toggle('active', s === id);
+    });
   }
   function qwShowStep(id) {
-    ['qwStepAmount', 'qwStepDetails'].forEach(function (s) { document.getElementById(s).classList.toggle('active', s === id); });
+    ['qwStepAmount', 'qwStepDetails'].forEach(function (s) {
+        document.getElementById(s).classList.toggle('active', s === id);
+    });
   }
   function qwResetForm() {
     document.getElementById('qwAmount').value = '';
@@ -927,8 +1050,12 @@ for (let i = 0; i < 100; i++) particles.push({
     document.getElementById('qwSubmitBtn').disabled = !valid;
   }
   document.getElementById('qwAmount').addEventListener('input', qwUpdateContinueEnabled);
-  ['qwEmail1', 'qwEmail2'].forEach(function (id) { document.getElementById(id).addEventListener('input', qwUpdateSubmitEnabled); });
-  ['qwConfirmAmount', 'qwConfirmEmail'].forEach(function (id) { document.getElementById(id).addEventListener('change', qwUpdateSubmitEnabled); });
+  ['qwEmail1', 'qwEmail2'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', qwUpdateSubmitEnabled);
+  });
+  ['qwConfirmAmount', 'qwConfirmEmail'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', qwUpdateSubmitEnabled);
+  });
   document.getElementById('qwMaxBtn').addEventListener('click', function () {
     document.getElementById('qwAmount').value = qwAvailable().amount.toFixed(2);
     qwUpdateContinueEnabled();
@@ -941,13 +1068,19 @@ for (let i = 0; i < 100; i++) particles.push({
     input.value = next.toFixed(2);
     qwUpdateContinueEnabled();
   }
-  document.getElementById('qwStepUp').addEventListener('click', function () { qwStep(0.01); });
-  document.getElementById('qwStepDown').addEventListener('click', function () { qwStep(-0.01); });
+  document.getElementById('qwStepUp').addEventListener('click', function () {
+      qwStep(0.01);
+  });
+  document.getElementById('qwStepDown').addEventListener('click', function () {
+      qwStep(-0.01);
+  });
   document.getElementById('qwContinueBtn').addEventListener('click', function () {
     if (this.disabled) return;
     qwShowStep('qwStepDetails');
   });
-  document.getElementById('qwBackBtn').addEventListener('click', function () { qwShowStep('qwStepAmount'); });
+  document.getElementById('qwBackBtn').addEventListener('click', function () {
+      qwShowStep('qwStepAmount');
+  });
 
   function openQwModal() {
     const avail = qwAvailable();
@@ -970,7 +1103,10 @@ for (let i = 0; i < 100; i++) particles.push({
   document.getElementById('qwSubmitBtn').addEventListener('click', function () {
     if (this.disabled) return;
     const token = loadToken();
-    if (!token) { closeQwModal(); return; }
+    if (!token) {
+        closeQwModal();
+        return;
+    }
     const amount = parseFloat(document.getElementById('qwAmount').value);
     const email = document.getElementById('qwEmail1').value.trim();
     qwShowState('qwStateSubmitting');
@@ -1045,7 +1181,9 @@ for (let i = 0; i < 100; i++) particles.push({
   if (rankupCloseBtn) rankupCloseBtn.addEventListener('click', closeRankupModal);
   const rankupOverlay = document.getElementById('rankupOverlay');
   if (rankupOverlay) {
-    rankupOverlay.addEventListener('click', function (e) { if (e.target === this) closeRankupModal(); });
+    rankupOverlay.addEventListener('click', function (e) {
+        if (e.target === this) closeRankupModal();
+    });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && rankupOverlay.classList.contains('open')) closeRankupModal();
     });
@@ -1055,7 +1193,10 @@ for (let i = 0; i < 100; i++) particles.push({
     rankupSubmitBtn.addEventListener('click', function () {
       if (this.disabled) return;
       const token = loadToken();
-      if (!token) { closeRankupModal(); return; }
+      if (!token) {
+          closeRankupModal();
+          return;
+      }
       const banner = document.getElementById('rankupBanner');
       const currentTier = banner.dataset.currentTier;
       const requestedTier = banner.dataset.requestedTier;
@@ -1081,7 +1222,9 @@ for (let i = 0; i < 100; i++) particles.push({
         .then(data => {
           rankupSubmitBtn.disabled = false;
           if (data && data.ok) {
-            try { localStorage.setItem(RANKUP_PENDING_KEY, currentTier + '->' + requestedTier); } catch (e) {}
+            try {
+                localStorage.setItem(RANKUP_PENDING_KEY, currentTier + '->' + requestedTier);
+            } catch (e) {}
             closeRankupModal();
             showToast('📨', 'Rank-up request sent', "We'll review it and get back to you on Discord.", null, 'View Dashboard', 'index');
             renderRankupBanner(lastData);
@@ -1122,7 +1265,9 @@ for (let i = 0; i < 100; i++) particles.push({
     e.preventDefault();
     const el = document.getElementById('pageTransition');
     if (el) el.classList.remove('hide');
-    setTimeout(function () { window.location.href = a.href; }, 120);
+    setTimeout(function () {
+        window.location.href = a.href;
+    }, 120);
   });
 
   (function init() {
@@ -1132,8 +1277,12 @@ for (let i = 0; i < 100; i++) particles.push({
       const code = params.get('code');
       const returnedState = params.get('state') || '';
       let storedState = '';
-      try { storedState = sessionStorage.getItem(OAUTH_STATE_KEY) || ''; } catch (e) {}
-      try { sessionStorage.removeItem(OAUTH_STATE_KEY); } catch (e) {}
+      try {
+          storedState = sessionStorage.getItem(OAUTH_STATE_KEY) || '';
+      } catch (e) {}
+      try {
+          sessionStorage.removeItem(OAUTH_STATE_KEY);
+      } catch (e) {}
 
       const cleanUrl = new URL(window.location.href);
       cleanUrl.searchParams.delete('code');
@@ -1159,7 +1308,10 @@ for (let i = 0; i < 100; i++) particles.push({
     }
 
     const token = loadToken();
-    if (!token) { show('stateLogin'); return; }
+    if (!token) {
+        show('stateLogin');
+        return;
+    }
     const cached = loadCache();
     if (cached) {
       show('stateData');
