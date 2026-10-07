@@ -426,7 +426,7 @@ for (let i = 0; i < 100; i++) particles.push({
     document.getElementById('monthlyChartLoading').style.display = 'none';
     document.getElementById('partnerAvatar').src = avatarUrl(data.user);
     document.getElementById('partnerName').textContent = (data.user && (data.user.name || data.user.username)) || 'Creator';
-    document.getElementById('partnerRate').textContent = data.percentage + '% commission on referred orders';
+    document.getElementById('partnerRate').textContent = data.percentage + '% commission on referred orders' + (data.capeRevenue > 0 ? ' · ' + data.capeRevenue + '% on your cape sales' : '');
     const TIER_LABELS = { media: 'Media', partner: 'Partner', partner_plus: 'Partner+' };
     const TIER_CLASSES = { partner: ' partner', partner_plus: ' plus' };
     const tierBadge = document.getElementById('partnerTierBadge');
@@ -484,7 +484,7 @@ for (let i = 0; i < 100; i++) particles.push({
       dateEl.textContent = new Date(item.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
       const descEl = document.createElement('div');
       descEl.className = 'history-row-desc';
-      descEl.textContent = 'Order under your discount code';
+      descEl.textContent = item.type === 'cape' ? 'Your ' + (item.capeName || 'cape') + ' cape was sold' : 'Order under your discount code';
       main.appendChild(dateEl);
       main.appendChild(descEl);
 
@@ -759,7 +759,8 @@ for (let i = 0; i < 100; i++) particles.push({
               return o.timestamp > lastSeen;
           });
           if (newOnes.length === 1) {
-            showToast('🎉', 'New order!', '+' + newOnes[0].commission.toFixed(2) + ' ' + newOnes[0].currency.toUpperCase() + ' commission earned.', null, 'View Dashboard', 'index');
+            const isCape = newOnes[0].type === 'cape';
+            showToast('🎉', isCape ? 'Cape sold!' : 'New order!', (isCape && newOnes[0].capeName ? newOnes[0].capeName + ': ' : '') + '+' + newOnes[0].commission.toFixed(2) + ' ' + newOnes[0].currency.toUpperCase() + (isCape ? ' cape revenue earned.' : ' commission earned.'), null, 'View Dashboard', 'index');
           } else if (newOnes.length > 1) {
             showToast('🎉', newOnes.length + ' new orders', 'Since your last visit.', null, 'View Dashboard', 'index');
           }
