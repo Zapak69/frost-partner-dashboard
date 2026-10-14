@@ -35,7 +35,7 @@ for (let i = 0; i < 100; i++) particles.push({
 
 (function () {
   const BRIDGE_URL = 'https://bot.frostclient.eu/partner-assets';
-  const LITE_API_URL = 'https://script.google.com/macros/s/AKfycbxF57u1UNBsonktp5_2EseJtFkBZR0-CCxyazOGVUmEBrcwjU1-t6Us41gcrRqCsGcR/exec';
+  const LITE_API_URL = 'https://bot.frostclient.eu/sheets';
   const TOKEN_KEY = 'frostPartnerDashToken';
   const LAST_VISIT_KEY = 'frostPartnerAssetsLastVisit';
   function loadLastVisit() {

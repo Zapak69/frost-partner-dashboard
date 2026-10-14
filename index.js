@@ -34,7 +34,7 @@ for (let i = 0; i < 100; i++) particles.push({
 })();
 
 (function () {
-  const LITE_API_URL = 'https://script.google.com/macros/s/AKfycbxF57u1UNBsonktp5_2EseJtFkBZR0-CCxyazOGVUmEBrcwjU1-t6Us41gcrRqCsGcR/exec';
+  const LITE_API_URL = 'https://bot.frostclient.eu/sheets';
   const BOT_API_URL = 'https://bot.frostclient.eu';
   const RANKUP_NEXT_TIER = { media: 'partner', partner: 'partner_plus' };
   const RANKUP_MIN_ORDERS = 5;
