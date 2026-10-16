@@ -72,15 +72,76 @@
 
   <div id="stateLogin" class="state">
     <div class="login-hero">
-      <div class="login-badge-spacer"></div>
-      <div class="gate-eyebrow">Frost Creator Program</div>
-      <h1>Your Creator Dashboard</h1>
-      <p>Track referred orders, watch your earnings grow, and request withdrawals — all in one place. Sign in with the same Discord account you signed up with to get started.</p>
-      <button type="button" class="btn-discord" id="loginBtn">
-        <img src="https://frostclient.eu/icons/discord.webp" alt=""/> Sign in with Discord
-      </button>
-      <p class="login-become-partner">Not a creator yet? <a href="https://frostclient.eu/partner">Become a creator →</a></p>
+      <div class="gate-eyebrow pl-eyebrow">Frost Partner Program</div>
+      <h1>Grow with Frost.<br/><span class="pl-accent">Get paid for it.</span></h1>
+      <p>Creators earn commission on every order placed with their code, and partner servers get promoted to Frost players. Already a creator? Sign in with the Discord account you signed up with.</p>
+      <div class="pl-hero-actions">
+        <button type="button" class="btn-discord" id="loginBtn">
+          <img src="https://frostclient.eu/icons/discord.webp" alt=""/> Sign in with Discord
+        </button>
+        <a class="btn-secondary pl-hero-secondary" href="https://frostclient.eu/partner">Become a creator</a>
+      </div>
+      <p class="login-become-partner">Run a Minecraft server? <a href="https://frostclient.eu/partner#server">Apply as a partner server →</a></p>
+    </div>
 
+    <section class="pl-section pl-partners" id="plPartners" hidden>
+      <div class="pl-partners-label">Already partnered with Frost</div>
+      <div class="pl-partners-row" id="plPartnersRow"></div>
+      <a class="pl-link" href="https://frostclient.eu/partners">See all partners →</a>
+    </section>
+
+    <section class="pl-section">
+      <div class="pl-section-head">
+        <div class="gate-eyebrow">For creators</div>
+        <h2>Three ranks, better rates as you grow</h2>
+        <p>Everyone starts as Media the moment they sign up. Land orders and grow your audience, then request a rank-up from your dashboard.</p>
+      </div>
+      <div class="pl-tiers">
+        <div class="pl-tier">
+          <div class="pl-tier-name">Media</div>
+          <div class="pl-tier-rate"><span>10%</span> commission</div>
+          <ul class="pl-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>10% discount for your audience</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Withdraw after 2 months</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Free banners and assets</span></li></ul>
+          <div class="pl-tier-note">Instant, no review</div>
+        </div>
+        <div class="pl-tier pl-tier--mid">
+          <div class="pl-tier-name">Partner</div>
+          <div class="pl-tier-rate"><span>20%</span> commission</div>
+          <ul class="pl-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>15% discount for your audience</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Withdraw after 1 month</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>3+ orders and 1,000+ followers</span></li></ul>
+          <div class="pl-tier-note">Rank-up request</div>
+        </div>
+        <div class="pl-tier pl-tier--top">
+          <div class="pl-tier-name">Partner+</div>
+          <div class="pl-tier-rate"><span>25%</span> commission</div>
+          <ul class="pl-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>20% discount for your audience</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Withdraw after 2 weeks</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Free Frost Client Lite</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Your own cloak in the store</span></li></ul>
+          <div class="pl-tier-note">Rank-up from Partner</div>
+        </div>
+      </div>
+      <a class="pl-link" href="https://frostclient.eu/partner#requirements">Full requirements →</a>
+    </section>
+
+    <section class="pl-section">
+      <div class="pl-server">
+        <div class="pl-server-text">
+          <div class="gate-eyebrow">For servers</div>
+          <h2>Put your server in front of Frost players</h2>
+          <p>Partner servers are reviewed by our team. Once you're accepted we agree on the details with you on Discord.</p>
+          <a class="btn-secondary pl-server-btn" href="https://frostclient.eu/partner#server">Apply as a server</a>
+        </div>
+        <ul class="pl-list pl-server-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Listed on frostclient.eu/partners</strong> with your logo, description, IP and links</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Featured on the Frost homepage</strong> for selected partners</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Cross-promotion</strong> on our Discord and socials</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Joint events</strong> run together with the Frost team</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Perks for your players</strong> who play on Frost Client</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="pl-section">
+      <div class="pl-section-head">
+        <div class="gate-eyebrow">Your dashboard</div>
+        <h2>Everything in one place</h2>
+      </div>
       <div class="login-features">
         <div class="login-feature">
           <div class="login-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
@@ -103,7 +164,7 @@
           <div class="login-feature-desc">Grab your banners and other assets straight from the dashboard, no waiting on Discord.</div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 
   <div id="stateWorking" class="state">
@@ -417,6 +478,7 @@
 
 <script src="home-prompt.js"></script>
 <script src="push-notifications.js"></script>
+<script src="partners-strip.js"></script>
 <script src="index.js"></script>
 </body>
 </html>

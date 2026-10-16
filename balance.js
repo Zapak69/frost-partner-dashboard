@@ -540,7 +540,7 @@ for (let i = 0; i < 100; i++) particles.push({
           });
           if (newOnes.length === 1) {
             const isCape = newOnes[0].type === 'cape';
-            showToast('🎉', isCape ? 'Cape sold!' : 'New order!', (isCape && newOnes[0].capeName ? newOnes[0].capeName + ': ' : '') + '+' + newOnes[0].commission.toFixed(2) + ' ' + newOnes[0].currency.toUpperCase() + (isCape ? ' cape revenue earned.' : ' commission earned.'), null, 'View Dashboard', 'index');
+            showToast('🎉', isCape ? 'Cloak sold!' : 'New order!', (isCape && newOnes[0].capeName ? newOnes[0].capeName + ': ' : '') + '+' + newOnes[0].commission.toFixed(2) + ' ' + newOnes[0].currency.toUpperCase() + (isCape ? ' cloak revenue earned.' : ' commission earned.'), null, 'View Dashboard', 'index');
           } else if (newOnes.length > 1) {
             showToast('🎉', newOnes.length + ' new orders', 'Since your last visit.', null, 'View Dashboard', 'index');
           }
