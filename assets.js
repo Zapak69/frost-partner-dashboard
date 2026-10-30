@@ -370,11 +370,6 @@ for (let i = 0; i < 100; i++) particles.push({
     }
   }
 
-  // Media partners don't unlock the banner asset until they've landed a few orders (see
-  // MEDIA_BANNER_UNLOCK_ORDERS below) - every other tier sees it immediately, same as today.
-  // There's no real asset-type field anywhere in the system (assets are just files in a
-  // per-partner folder - see BANNERS_DIR in bot.js), so "is this the banner asset" is a simple
-  // filename convention instead of new backend infrastructure.
   const MEDIA_BANNER_UNLOCK_ORDERS = 5;
   let tierInfo = { tier: null, totalOrders: 0, loaded: false };
   let lastRenderedAssets = null, lastRenderedToken = null, lastRenderedVisit = null;
