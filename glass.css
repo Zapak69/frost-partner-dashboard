@@ -1,0 +1,82 @@
+:root {
+  --bg: #050608;
+  --surface: rgba(255,255,255,0.045);
+  --surface2: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.14);
+  --accent-rgb: 79, 200, 248;
+  --glass-solid: rgba(20,22,27,0.86);
+  --glass-blur: blur(22px) saturate(1.5);
+}
+
+body {
+  background:
+    radial-gradient(900px 520px at 8% -10%, rgba(var(--accent-rgb), 0.14), transparent 60%),
+    radial-gradient(800px 640px at 105% 110%, rgba(255,214,10,0.06), transparent 60%),
+    radial-gradient(600px 420px at 55% 35%, rgba(255,255,255,0.02), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+nav {
+  background: var(--surface);
+  border-color: var(--border);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: 0 18px 40px -26px rgba(0,0,0,0.8);
+}
+
+.code-card, .quick-action-card, .stat-tile, .chart-card, .rankup-banner, .login-feature,
+.asset-card, .balance-hero, .current-request-banner {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: 0 18px 50px -34px rgba(0,0,0,0.85);
+}
+.quick-action-card:hover, .login-feature:hover, .asset-card:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--border-strong);
+}
+.stat-tile:hover, .chart-card:hover {
+  border-color: rgba(var(--accent-rgb), 0.28);
+}
+.asset-preview, .asset-preview-generic, .quick-action-icon, .pl-pill, .pl-tier, .pl-server, .range-switch {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--border);
+}
+
+.refresh-btn, .notif-bell-btn, .modal-close, .footer-social-icons a {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+}
+.refresh-btn:hover, .notif-bell-btn:hover, .modal-close:hover, .footer-social-icons a:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.withdraw-input, input[type="text"], input[type="search"], input[type="number"], input[type="email"], textarea, select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.withdraw-input:focus, input[type="text"]:focus, input[type="search"]:focus, input[type="number"]:focus, input[type="email"]:focus, textarea:focus, select:focus {
+  outline: none;
+  background: rgba(255,255,255,0.06);
+  border-color: var(--frost-blue);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.16);
+}
+
+.notif-panel, .modal-box, .chart-tooltip, .toast {
+  background: var(--glass-solid);
+  border: 1px solid var(--border-strong);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: 0 24px 60px -20px rgba(0,0,0,0.85);
+}
+.modal-box {
+  border-radius: 22px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 6px;
+}
