@@ -15,7 +15,7 @@
   if (!token) return;
 
   function callPush(action, extra) {
-    return fetch('https://bot.frostclient.eu/' + action, {
+    return fetch('https://api.frostclient.eu/' + action, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(Object.assign({ token: token }, extra || {}))

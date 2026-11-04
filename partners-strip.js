@@ -1,5 +1,5 @@
 (function () {
-  const API = 'https://bot.frostclient.eu/site/partners';
+  const API = 'https://api.frostclient.eu/site/partners';
   const SHOW_COUNT = 6;
   const PRIMARY_LINK = { creator: ['youtube', 'tiktok', 'twitch', 'kick', 'x', 'instagram', 'website', 'discord'], server: ['website', 'discord', 'store'] };
   const row = document.getElementById('plPartnersRow');

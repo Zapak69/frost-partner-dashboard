@@ -34,7 +34,7 @@ for (let i = 0; i < 100; i++) particles.push({
 })();
 
 (function () {
-  const LITE_API_URL = 'https://bot.frostclient.eu/sheets';
+  const LITE_API_URL = 'https://api.frostclient.eu/sheets';
   const TOKEN_KEY = 'frostPartnerDashToken';
   const CACHE_KEY = 'frostPartnerDashCache';
   const TIER_FAVICONS = { media: 'favicons/media.ico', partner: 'favicons/partner.ico', partner_plus: 'favicons/partner+.ico' };
